@@ -1,0 +1,22 @@
+{
+    "constants": {
+        "vm__kmem_size": {"sysctl": "vm.kmem_size"},
+        "vm__stats__vm__v_v_page_count": {"sysctl": "vm.stats.vm.v_page_count"},
+        "hw__ncpu": {"sysctl": "hw.ncpu"}
+    },
+    "variables": {
+        "vm__stats__vm__v_free_count": {"sysctl": "vm.stats.vm.v_free_count"},
+        "time": {"syscmd": "date '+%H:%M:%S'"},
+        "var_messages": {"syscmd": "wc -l /var/log/messages | awk '{print $1}'"}
+    },
+    "incidents": {
+        "sysctl": {
+            "description": "",
+            "error": {
+                "trigger": "",
+                "escalation": "",
+                "remediation": ""
+            }
+        }
+    }
+}
