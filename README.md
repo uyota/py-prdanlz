@@ -15,14 +15,23 @@ Each level defines a range of a value.
 1. Monitor a system and report an incident
 1. Monitor a system and take actions/remediation automatically
 
+## Aiming
+
+1. Help monitoring a small set of FreeBSD machines
+1. Obtaining system information and statistics with sysctl and commands
+1. Experimenting auto-turn FreeBSD system
+
 # How to Install and Setup
 
 It runs on FreeBSD only.
 
 ```
 $ pkg install py##-sysctl
-% pip install periodic-analyzer
+% pip install --no-deps prdanlz
 ```
+
+Unfortunately, "pypi sysctl" cannot be installed as it is out-dated.
+Py-sysctl must be installed via ports/pkg as it fetches a newer and working version.
 
 # How to Setup
 
