@@ -1,5 +1,7 @@
 import pytest
 
+import sys
+
 import sysctl
 from . import EXAMPLES
 
@@ -13,4 +15,13 @@ def test_sysctl_examples(field):
 
     v = sysctl.filter(field[1])[0]
     print(field[0], v.type, v.value)
+    assert v.value != 0
+
+
+def test_sysctl_vmtotal():
+
+    # GIVEN
+    v = sysctl.filter("vm.vmtotal")[0]
+
+    # WHEN
     assert v.value != 0

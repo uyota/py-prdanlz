@@ -66,6 +66,31 @@ def test_variable_verify_sysctl_uint32():
     assert sysctl.value != 0
 
 
+def test_variable_verify_sysctl__vm__vmtotal():
+    # GIVEN
+    sysctl = SysctlVariable._verify_sysctl("vm.vmtotal")
+
+    # WHEN
+    value = SysctlVariable.extract_struct(sysctl)
+
+    # THEN
+    assert sysctl
+    assert len(value) != 0
+    assert type(value) == dict
+
+def test_variable_verify_sysctl__vm__loadavg():
+    # GIVEN
+    sysctl = SysctlVariable._verify_sysctl("vm.loadavg")
+
+    # WHEN
+    value = SysctlVariable.extract_struct(sysctl)
+
+    # THEN
+    assert sysctl
+    assert len(value) == 3
+    assert type(value) == tuple
+
+
 VARIABLE_JSON = {
     "sysctl": "hw.ncpu",
 }

@@ -2,6 +2,7 @@ import logging
 import os
 import sys
 from abc import ABC, abstractmethod
+from platform import architecture
 from typing import Any, Dict
 
 import sysctl
@@ -63,6 +64,46 @@ class SyscmdVariable(Variable):
         return os.popen(self._cmd).read().strip()
 
 
+TYPE = {
+    "uint64_t": (8, False),
+    "int64_t": (8, True),
+    "uint32_t": (4, False),
+    "int32_t": (4, True),
+    "uint16_t": (2, False),
+    "int16_t": (2, True),
+}
+
+VMTOTAL = [
+    ("uint64_t", "t_vm"),  #     /* total virtual memory */
+    ("uint64_t", "t_avm"),  #    /* active virtual memory */
+    ("uint64_t", "t_rm"),  #     /* total real memory in use */
+    ("uint64_t", "t_arm"),  #    /* active real memory */
+    ("uint64_t", "t_vmshr"),  #  /* shared virtual memory */
+    ("uint64_t", "t_avmshr"),  # /* active shared virtual memory */
+    ("uint64_t", "t_rmshr"),  #  /* shared real memory */
+    ("uint64_t", "t_armshr"),  # /* active shared real memory */
+    ("uint64_t", "t_free"),  #   /* free memory pages */
+    ("int16_t", "t_rq"),  #      /* length of the run queue */
+    ("int16_t", "t_dw"),  #      /* threads in ``disk wait'' (neg priority) */
+    ("int16_t", "t_pw"),  #      /* threads in page wait */
+    ("int16_t", "t_sl"),  #      /* threads sleeping in core */
+    ("int16_t", "t_sw"),  #      /* swapped out runnable/short block threads */
+]
+
+LOADAVG32 = [
+    ("uint32_t", "1min"),
+    ("uint32_t", "3min"),
+    ("uint32_t", "15min"),
+    ("int32_t", "scale"),  # actual definition is ("long", "scale"),
+]
+LOADAVG64 = [
+    ("uint32_t", "1min"),
+    ("uint32_t", "3min"),
+    ("uint32_t", "15min"),
+    ("int64_t", "scale"),  # actual definition is ("long", "scale"),
+]
+
+
 class SysctlVariable(Variable):
     """
     A user defines a variable with its "name" and sysctl name for its value.
@@ -88,9 +129,39 @@ class SysctlVariable(Variable):
             offset = 2
         elif ctl.type == 15:  # CTLTYPE_U32
             offset = 4
+        elif ctl.type == 5:  # CTLTYPE_U32
+            return SysctlVariable.extract_struct(ctl)
         else:
             return ctl.value
         return int.from_bytes(ctl.value[0:offset], sys.byteorder, signed=False)
+
+    @staticmethod
+    def extract_loadavg(ctl: "Sysctl") -> Any:
+        loadavg = LOADAVG32 if architecture()[0] == "32bit" else LOADAVG64
+        tmp = SysctlVariable.transform_struct(ctl, loadavg)
+        scale = float(tmp["scale"])
+        return (tmp["1min"] / scale, tmp["3min"] / scale, tmp["15min"] / scale)
+
+    @staticmethod
+    def transform_struct(ctl: "Sysctl", mapping: Dict) -> Dict:
+        value = {}
+        start = 0
+        for field in mapping:
+            (offset, signed) = TYPE[field[0]]
+            bytes = ctl.value[start : start + offset]
+            value[field[1]] = int.from_bytes(bytes, sys.byteorder, signed=signed)
+            start += offset
+        return value
+
+    @staticmethod
+    def extract_struct(ctl: "Sysctl") -> Any:
+        if ctl.name == "vm.vmtotal":
+            mapping = VMTOTAL
+        elif ctl.name == "vm.loadavg":
+            return SysctlVariable.extract_loadavg(ctl)
+        else:
+            return ctl.value
+        return SysctlVariable.transform_struct(ctl, mapping)
 
     @staticmethod
     def _verify_sysctl(name: str) -> sysctl.Sysctl:
