@@ -78,6 +78,7 @@ def test_variable_verify_sysctl__vm__vmtotal():
     assert len(value) != 0
     assert type(value) == dict
 
+
 def test_variable_verify_sysctl__vm__loadavg():
     # GIVEN
     sysctl = SysctlVariable._verify_sysctl("vm.loadavg")

@@ -9,15 +9,16 @@
         "time": {"syscmd": "date '+%H:%M:%S'"},
         "vm__vmtotal": {"sysctl": "vm.vmtotal"},
         "vm__loadavg": {"sysctl": "vm.loadavg"},
-        "var_messages": {"syscmd": "wc -l /var/log/messages | awk '{print $1}'"}
-        "vm__swap_total": {"sysctl": "vm.swap_total"},
+        "var_messages": {"syscmd": "wc -l /var/log/messages | awk '{print $1}'"},
+        "vm__swap_total": {"sysctl": "vm.swap_total"}
     },
     "incidents": {
         "sysctl": {
-            "description": "",
+            "description": "loadavg test",
             "error": {
-                "trigger": "",
-                "escalation": "",
+                "trigger": "{vm__loadavg[0]} > 0.7",
+                "untrigger": "{vm__loadavg[0]} < 0.5",
+                "escalation": "logger 'LoadAvg is {vm__loadavg[0]}'",
                 "remediation": ""
             }
         }

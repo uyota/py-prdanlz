@@ -4,7 +4,7 @@ import signal
 import threading
 from typing import Dict, Optional, Set
 
-from . import instantiate_variable
+from . import Incident, instantiate_variable
 
 logger = logging.getLogger(__name__)
 
@@ -33,9 +33,16 @@ class Monitor:
     def add_variables(self, json: Dict) -> int:
         return self._parse_variables(json, self._variables)
 
-    def add_rules(self, json: Dict) -> int:
+    def add_incidents(self, json: Dict) -> int:
         count = 0
-        return cout
+        for key, json in json.items():
+            incident = Incident(key, json)
+            if incident in self._incidents:
+                raise Exception(f"Incident '{key}' already exists")
+            self._incidents.add(incident)
+            logger.info(f"Incident '{incident.name}' is configured")
+            count += 1
+        return count
 
     def start(self) -> None:
         for v in self._constants:
@@ -63,9 +70,12 @@ class Monitor:
             logger.info(f"'{v.name}' is loaded and holds {value}")
             locals["last_" + v.name] = last_value
             logger.info(f"'last_{v.name}' is loaded and holds '{last_value}'")
+        logger.debug("Reloaded all variables")
 
         for incident in self._incidents:
-            incident.check(locals)
+            logger.debug(f"Evaluating '{incident.name}' incident")
+            incident.escalated(locals)
+        logger.debug("Evaludated all incidents")
 
     def _parse_variables(self, json: Dict, containor: Set) -> int:
         count = 0

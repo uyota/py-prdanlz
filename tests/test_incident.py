@@ -4,7 +4,7 @@ import itertools
 from unittest import mock
 
 from prdanlz import Incident
-from prdanlz.incident import _clone_with_privitives
+from prdanlz.incident import _clone_with_primitives
 
 
 @pytest.mark.parametrize(
@@ -19,13 +19,13 @@ from prdanlz.incident import _clone_with_privitives
     ],
 )
 def test_dict_clone(input, size):
-    copy = _clone_with_privitives(input)
+    copy = _clone_with_primitives(input)
     assert len(copy) == size
 
 
 LEVEL_DICT = {
-    "trigger": "1 < value",
-    "untrigger": "value < 0.5",
+    "trigger": "1 < {value}",
+    "untrigger": "{value} < 0.5",
     "escalation": "echo trigger condition was [{trigger}]",
     "remediation": "N/A",
 }
@@ -38,12 +38,12 @@ INCIDENT_DICT1 = {
 INCIDENT_DICT2 = {
     "description": "Check the number of CPUs",
     "error": {
-        "trigger": "3 < value",
-        "untrigger": "value < 2.8",
+        "trigger": "3 < {value}",
+        "untrigger": "{value} < 2.8",
         "escalation": "echo '{level} trigger condition was [{trigger}] with [value={value}]'",
     },
-    "warn": {"trigger": "2 < value", "untrigger": "value < 1.8"},
-    "info": {"trigger": "1 < value", "untrigger": "value < 0.8"},
+    "warn": {"trigger": "2 < {value}", "untrigger": "{value} < 1.8"},
+    "info": {"trigger": "1 < {value}", "untrigger": "{value} < 0.8"},
 }
 
 
@@ -83,7 +83,7 @@ def test_incident_missing_field(field):
 
     # WHEN
     with pytest.raises(Exception) as e:
-        i = Incident(incident_dict)
+        i = Incident("test", incident_dict)
 
         # THEN
         assert e
@@ -98,7 +98,7 @@ def test_incident_missing_optional_fields(fields):
 
     # WHEN
     with pytest.raises(Exception) as e:
-        i = Incident(incident_dict)
+        i = Incident("test", incident_dict)
 
         # THEN
         assert e is None
@@ -111,7 +111,7 @@ def test_incident():
 
     # WHEN
     with pytest.raises(Exception) as e:
-        i = Incident(incident_dict)
+        i = Incident("test", incident_dict)
 
         # THEN
         assert e is None
@@ -125,7 +125,7 @@ def test_incident_desc_instead_of_description():
 
     # WHEN
     with pytest.raises(Exception) as e:
-        i = Incident(incident_dict)
+        i = Incident("test", incident_dict)
 
         # THEN
         assert e is None
@@ -133,7 +133,7 @@ def test_incident_desc_instead_of_description():
 
 def test_incident_not_escalated():
     # GIVEN
-    i = Incident(INCIDENT_DICT1)
+    i = Incident("test", INCIDENT_DICT1)
 
     # WHEN & THEN
     assert not i.escalated({"value": 0})
@@ -141,7 +141,7 @@ def test_incident_not_escalated():
 
 def test_incident_escalated():
     # GIVEN
-    i = Incident(INCIDENT_DICT1)
+    i = Incident("test", INCIDENT_DICT1)
 
     # WHEN & THEN
     assert i.escalated({"value": 2})
@@ -150,7 +150,7 @@ def test_incident_escalated():
 @mock.patch("os.system")
 def test_incident_escalating(os_system):
     # GIVEN
-    i = Incident(INCIDENT_DICT2)
+    i = Incident("test", INCIDENT_DICT2)
 
     # WHEN
     assert i.escalated({"value": 1.5})
@@ -177,7 +177,7 @@ CASE1 = [
 @pytest.mark.parametrize("value,expected1,expected2", CASE1)
 def test_incident_escalating_from_0_x_09(os_system, value, expected1, expected2):
     # GIVEN
-    i = Incident(INCIDENT_DICT2)
+    i = Incident("test", INCIDENT_DICT2)
     idx = 0
     i.escalated({"value": 0})
 
@@ -214,7 +214,7 @@ CASE2 = [
 @pytest.mark.parametrize("value,expected1,expected2", CASE2)
 def test_incident_escalating_from_25_x_21(os_system, value, expected1, expected2):
     # GIVEN
-    i = Incident(INCIDENT_DICT2)
+    i = Incident("test", INCIDENT_DICT2)
     idx = 0
 
     # WHEN
@@ -256,7 +256,7 @@ CASE3 = [
 @pytest.mark.parametrize("value,expected1,expected2", CASE3)
 def test_incident_escalating_from_25_x_19(os_system, value, expected1, expected2):
     # GIVEN
-    i = Incident(INCIDENT_DICT2)
+    i = Incident("test", INCIDENT_DICT2)
     idx = 0
 
     # WHEN

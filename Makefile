@@ -10,6 +10,9 @@ default : test
 run :
 	$(PYTHON) -m prdanlz --config prdanlz.json -l prdanlz.log -i 10
 
+debug :
+	$(PYTHON) -m prdanlz --config prdanlz.json -l prdanlz.log -i 10 -d
+
 test :
 	$(PYTHON) -m pytest
 

@@ -148,12 +148,18 @@ Both true values from trigger and untrigger expressions indicates a value
 is within threshold.
 An untrigger is a low watermark and an trigger is a hight watermark.
 
-##### Example
+#### "trigger"/"untrigger" Formats
+
+"trigger" and "untrigger" take a string of expressions.
+These expressions can access constants and variables by
+surrounded variable name with curly braces.
+
+##### Examples
 
 Given
 ```
-"trigger": "90 < value",
-"untrigger": "value < 85"
+"trigger": "90 < {value}",
+"untrigger": "{value} < 85"
 ```
 
 1. When value changes [ 10, 20, 30 ], nothing is triggered
@@ -163,11 +169,13 @@ Given
 1. When value changes [ 0, 95, 93 ], 95 is a trigger but 93 is not
 1. When value changes [ 0, 95, 89, 91 ], 95 is an trigger but neither 89 nor 91
 
-#### "escalation"
+#### "escalation" and its Format
 
 An escalation is an expression that is executed as a shell command.
 A sequence of commands can be specified.
 Variables surrounded by curly braces are replaced to actual values.
+
+##### Examples
 
 An useful way is send '{description} with 'logger' to write to syslog.
 
@@ -178,7 +186,7 @@ An useful way is send '{description} with 'logger' to write to syslog.
 ### "Level" Inheritance
 
 If any of "trigger", "untrigger", or "escalation" is not specified,
-lower levels assumes they are save as a higher level entry.
+lower levels assume they are same as a higher level entry.
 
 Given
 ```

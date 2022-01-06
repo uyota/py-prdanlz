@@ -7,6 +7,8 @@ import os
 
 from . import Monitor
 
+logger = logging.getLogger(__name__)
+
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -63,11 +65,14 @@ def main(args):
         with file as json_file:
             setting = json.load(json_file)
             if "constants" in setting:
+                logger.debug(f"Loading constants from '{file.name}'")
                 m.add_constants(setting["constants"])
             if "variables" in setting:
+                logger.debug(f"Loading variables from '{file.name}'")
                 m.add_variables(setting["variables"])
-            if "rules" in setting:
-                m.add_variables(setting["rules"])
+            if "incidents" in setting:
+                logger.debug(f"Loading incidents from '{file.name}'")
+                m.add_incidents(setting["incidents"])
     m.start()
 
 
