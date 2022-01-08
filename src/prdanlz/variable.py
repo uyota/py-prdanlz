@@ -1,8 +1,8 @@
 import logging
 import os
+import struct
 import sys
 from abc import ABC, abstractmethod
-from platform import architecture
 from typing import Any, Dict
 
 import sysctl
@@ -65,12 +65,22 @@ class SyscmdVariable(Variable):
 
 
 TYPE = {
-    "uint64_t": (8, False),
-    "int64_t": (8, True),
-    "uint32_t": (4, False),
-    "int32_t": (4, True),
-    "uint16_t": (2, False),
-    "int16_t": (2, True),
+    # "node": None,
+    "integer": "i",
+    # "string": None,
+    "int64_t": "q",
+    # "opaque": None,
+    "unsigned integer": "I",
+    "long integer": "l",
+    "long": "l",
+    "unsigned long": "L",
+    "uint64_t": "Q",
+    "uint8_t": "B",
+    "uint16_t": "H",
+    "int8_t": "b",
+    "int16_t": "h",
+    "int32_t": "i",
+    "uint32_t": "I",
 }
 
 VMTOTAL = [
@@ -90,17 +100,11 @@ VMTOTAL = [
     ("int16_t", "t_sw"),  #      /* swapped out runnable/short block threads */
 ]
 
-LOADAVG32 = [
+LOADAVG = [
     ("uint32_t", "1min"),
     ("uint32_t", "3min"),
     ("uint32_t", "15min"),
-    ("int32_t", "scale"),  # actual definition is ("long", "scale"),
-]
-LOADAVG64 = [
-    ("uint32_t", "1min"),
-    ("uint32_t", "3min"),
-    ("uint32_t", "15min"),
-    ("int64_t", "scale"),  # actual definition is ("long", "scale"),
+    ("long", "scale"),
 ]
 
 
@@ -137,8 +141,7 @@ class SysctlVariable(Variable):
 
     @staticmethod
     def extract_loadavg(ctl: "Sysctl") -> Any:
-        loadavg = LOADAVG32 if architecture()[0] == "32bit" else LOADAVG64
-        tmp = SysctlVariable.transform_struct(ctl, loadavg)
+        tmp = SysctlVariable.transform_struct(ctl, LOADAVG)
         scale = float(tmp["scale"])
         return (tmp["1min"] / scale, tmp["3min"] / scale, tmp["15min"] / scale)
 
@@ -147,9 +150,10 @@ class SysctlVariable(Variable):
         value = {}
         start = 0
         for field in mapping:
-            (offset, signed) = TYPE[field[0]]
+            format = TYPE[field[0]]
+            offset = struct.calcsize(format)  # TODO - optimize
             bytes = ctl.value[start : start + offset]
-            value[field[1]] = int.from_bytes(bytes, sys.byteorder, signed=signed)
+            (value[field[1]],) = struct.unpack_from(format, ctl.value, start)
             start += offset
         return value
 
