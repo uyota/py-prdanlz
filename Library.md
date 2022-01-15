@@ -1,5 +1,12 @@
 There are 2 Python sysctl libraries in FreeBSD ports.
 
+# Dependencies
+
+prdanlz uses py-sysctl.
+
+1. FreeBSD pkg version 0.3.1
+2. PyPI version 0.3.3 - prior version cannot be installed with pip
+
 # sysctl Libraries
 
 'py-freebsd-sysctl' and 'py-sysctl' exist.
