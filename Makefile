@@ -1,6 +1,6 @@
 export PYTHONPATH=src
 
-PYTHON ?= python3
+PYTHON ?= python
 
 # REPO = --repository testpypi
 # PIPURL = --index-url https://test.pypi.org/simple/
@@ -23,7 +23,8 @@ upload :
 	$(PYTHON) -m twine upload $(REPO) dist/*
 
 pip-install :
-	$(PYTHON) -m pip install $(PIPURL) --no-deps prdanlz
+	# $(PYTHON) -m pip install $(PIPURL) --no-deps prdanlz-uyota
+	$(PYTHON) -m pip install $(PIPURL) prdanlz-uyota
 
 clean :
 	rm -rf build dist
