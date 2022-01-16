@@ -21,17 +21,35 @@ Each level defines a range of a value.
 1. Obtaining system information and statistics with sysctl and commands
 1. Experimenting auto-turn FreeBSD system
 
-# How to Install and Setup
+# How to Install
 
 It runs on FreeBSD only.
 
+## PyPI
+
 ```
-$ pkg install py##-sysctl
-% pip install --no-deps prdanlz
+% python -m venv venv
+% source venv/bin/activate.csh
+% pip install prdanlz
 ```
 
-Unfortunately, "pypi sysctl" cannot be installed as it is out-dated.
-Py-sysctl must be installed via ports/pkg as it fetches a newer and working version.
+## PKG + Ports
+
+py-prdanlz is not yet in FreeBSD's ports.
+However, ports' Makefile is prepared with the code base.
+
+```
+$ pkg install py##-sysctl
+$ cd /usr/ports
+$ fetch https://github.com/uyota/py-prdanlz/archive/refs/tags/v0.0.5.tar.gz
+$ tar xf v0.0.5.tar.gz
+$ cd py-prdanlz/ports
+$ make fetch makesum install
+```
+
+1. Check [release page](https://github.com/uyota/py-prdanlz/releases) for the latest version.
+1. Ports "distinfo" file contains timestamp, checksum, and size of the release file. This file cannot be maintained well in the source repo itself due to chiken and egg problem.  Run 'makesum' to generate it as a part of build process.
+
 
 # How to Setup
 
@@ -53,6 +71,27 @@ Py-sysctl must be installed via ports/pkg as it fetches a newer and working vers
 1. After all variables are fetched, evaluate all of incidents
 1. If a value moves into a new level of an incident, trigger an action
 1. Wait for another interval period and repeat
+
+# Motivations
+
+BSD's sysctl provides a lot of information about the running system.
+
+Sysctl is a system call as well as a corresponding program name.
+
+Base system provides number of other tools to capture
+system information one-time or a period of time such as
+"systat", "vmstat", "top", "swapctl", and etc.
+
+
+Using sysctl program becomes very expensive as it starts a new process
+each time when gathering number of information.
+Calling sysctl system call saves process creation and decoding overhead;
+however, writing or adjusting C/C++ program requires a lot of programming hours.
+
+prdanlz uses Python binding of sysctl system call via a library.
+This avoid process creation overhead.
+By taking advantage of Python interpreter, prdanlz can also provide and
+perform complex arithmetics at very low cost compare to shell scripts.
 
 # JSON format
 
