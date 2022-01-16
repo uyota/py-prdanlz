@@ -52,7 +52,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def main(args):
+def analyze(args):
     if args.log:
         logging.basicConfig(
             filename=args.log, level=logging.DEBUG if args.debug else logging.INFO
@@ -76,13 +76,16 @@ def main(args):
     m.start()
 
 
-if __name__ == "__main__":
+def main():
     args = parse_args()
     try:
-        main(args)
+        analyze(args)
     except KeyboardInterrupt:
         try:
             signal.signal(signal.SIGINT, signal.SIG_IGN)
             sys.exit(0)
         except SystemExit:
             os._exit(0)
+
+if __name__ == "__main__":
+    main()
