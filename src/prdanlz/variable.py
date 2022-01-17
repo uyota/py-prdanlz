@@ -2,6 +2,7 @@ import logging
 import os
 import struct
 import sys
+import time
 from abc import ABC, abstractmethod
 from typing import Any, Dict
 
@@ -67,6 +68,7 @@ class SyscmdVariable(Variable):
 TYPE = {
     # "node": None,
     "integer": "i",
+    "int": "i",
     # "string": None,
     "int64_t": "q",
     # "opaque": None,
@@ -81,7 +83,29 @@ TYPE = {
     "int16_t": "h",
     "int32_t": "i",
     "uint32_t": "I",
+    "time_t": "i",
+    "suseconds_t": "l",
 }
+
+CLOCKINFO = [
+    ("int", "hz"),  #             /* clock frequency */
+    ("int", "tick"),  #           /* micro-seconds per hz tick */
+    ("int", ""),
+    ("int", "stathz"),  #         /* statistics clock frequency */
+    ("int", "profhz"),  #         /* profiling clock frequency */
+]
+
+LOADAVG = [
+    ("uint32_t", "1min"),
+    ("uint32_t", "3min"),
+    ("uint32_t", "15min"),
+    ("long", "scale"),
+]
+
+TIMEVAL = [
+    ("time_t", "sec"),  #       /* seconds */
+    ("suseconds_t", "usec"),  # /* and microseconds */
+]
 
 VMTOTAL = [
     ("uint64_t", "t_vm"),  #     /* total virtual memory */
@@ -98,13 +122,6 @@ VMTOTAL = [
     ("int16_t", "t_pw"),  #      /* threads in page wait */
     ("int16_t", "t_sl"),  #      /* threads sleeping in core */
     ("int16_t", "t_sw"),  #      /* swapped out runnable/short block threads */
-]
-
-LOADAVG = [
-    ("uint32_t", "1min"),
-    ("uint32_t", "3min"),
-    ("uint32_t", "15min"),
-    ("long", "scale"),
 ]
 
 
@@ -152,17 +169,29 @@ class SysctlVariable(Variable):
         for field in mapping:
             format = TYPE[field[0]]
             offset = struct.calcsize(format)  # TODO - optimize
-            bytes = ctl.value[start : start + offset]
-            (value[field[1]],) = struct.unpack_from(format, ctl.value, start)
+            if len(field[1]) > 0:
+                (value[field[1]],) = struct.unpack_from(format, ctl.value, start)
             start += offset
         return value
 
     @staticmethod
     def extract_struct(ctl: "Sysctl") -> Any:
-        if ctl.name == "vm.vmtotal":
-            mapping = VMTOTAL
+        if ctl.name == "kern.clockrate":
+            mapping = CLOCKINFO
+            return ctl.value  # py-sysctl has clockinfo conversion
         elif ctl.name == "vm.loadavg":
             return SysctlVariable.extract_loadavg(ctl)
+        elif ctl.name == "kern.boottime":
+            mapping = TIMEVAL
+            t = SysctlVariable.transform_struct(ctl, mapping)
+            return (t, time.ctime(t["sec"]))
+        elif ctl.name == "vm.vmtotal":
+            mapping = VMTOTAL
+        elif ctl.name == "hw.pagesizes":
+            format = TYPE["unsigned long"]
+            offset = struct.calcsize(format)  # TODO - optimize
+            num = int(len(ctl.value) / offset)
+            return list(struct.unpack(format * num, ctl.value))
         else:
             return ctl.value
         return SysctlVariable.transform_struct(ctl, mapping)

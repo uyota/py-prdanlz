@@ -66,16 +66,16 @@ def test_variable_verify_sysctl_uint32():
     assert sysctl.value != 0
 
 
-def test_variable_verify_sysctl__vm__vmtotal():
+def test_variable_verify_sysctl__kern__clockrate():
     # GIVEN
-    sysctl = SysctlVariable._verify_sysctl("vm.vmtotal")
+    sysctl = SysctlVariable._verify_sysctl("kern.clockrate")
 
     # WHEN
     value = SysctlVariable.extract_struct(sysctl)
 
     # THEN
     assert sysctl
-    assert len(value) != 0
+    assert len(value) == 4
     assert type(value) == dict
 
 
@@ -90,6 +90,48 @@ def test_variable_verify_sysctl__vm__loadavg():
     assert sysctl
     assert len(value) == 3
     assert type(value) == tuple
+
+
+def test_variable_verify_sysctl__kern__boottime():
+    # GIVEN
+    sysctl = SysctlVariable._verify_sysctl("kern.boottime")
+
+    # WHEN
+    value = SysctlVariable.extract_struct(sysctl)
+
+    # THEN
+    assert sysctl
+    assert len(value) == 2
+    assert type(value) == tuple
+    assert len(value[0]) == 2
+    assert type(value[0]) == dict
+    assert type(value[1]) == str
+
+
+def test_variable_verify_sysctl__vm__vmtotal():
+    # GIVEN
+    sysctl = SysctlVariable._verify_sysctl("vm.vmtotal")
+
+    # WHEN
+    value = SysctlVariable.extract_struct(sysctl)
+
+    # THEN
+    assert sysctl
+    assert len(value) != 0
+    assert type(value) == dict
+
+
+def test_variable_verify_sysctl__pagesizes():
+    # GIVEN
+    sysctl = SysctlVariable._verify_sysctl("hw.pagesizes")
+
+    # WHEN
+    value = SysctlVariable.extract_struct(sysctl)
+
+    # THEN
+    assert sysctl
+    assert len(value) != 0
+    assert type(value) == list
 
 
 VARIABLE_JSON = {
