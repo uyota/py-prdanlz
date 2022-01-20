@@ -1,1 +1,1 @@
-from .fixture_sysctl import EXAMPLES
+from .fixture_sysctl import TYPES as EXAMPLES

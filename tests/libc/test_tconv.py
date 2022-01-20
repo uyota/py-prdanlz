@@ -31,6 +31,9 @@ def test_tconv_natives(nconv, offset, expected):
     # THEN
     assert v == expected
 
+    # WHEN & THEN - the size of these types are not zero
+    assert nconv.size != 0
+
 
 @pytest.mark.parametrize(
     "nconv,expected32,expected64",
@@ -54,10 +57,13 @@ def test_tconv_longs(nconv, expected32, expected64):
     # THEN
     assert v == expected
 
+    # WHEN & THEN - the size of longs are not zero
+    assert nconv.size != 0
+
 
 def test_tconv_cstring():
     # GIVEN
-    input = b"FEDCBA9876543210"
+    input = b"FEDCBA9876543210\x00"
 
     # WHEN
     v = tconv.cstr.c2p(input)
@@ -65,10 +71,13 @@ def test_tconv_cstring():
     # THEN
     assert v == "FEDCBA9876543210"
 
+    # WHEN & THEN - the size returned is 0
+    assert tconv.cstr.size == 0
+
 
 def test_tconv_cstring__offset():
     # GIVEN
-    input = b"FEDCBA9876543210"
+    input = b"FEDCBA9876543210\x00"
 
     # WHEN
     v = tconv.cstr.c2p(input, 8)

@@ -1,4 +1,4 @@
-EXAMPLES = [
+TYPES = [
     ["CTLTYPE_INT", "kern.osrevision", "integer"],
     ["CTLTYPE_STRING", "kern.ostype", "string"],
     # CTLTYPE_S8 - No Entry
@@ -13,4 +13,15 @@ EXAMPLES = [
     ["CTLTYPE_UINT", "kern.maxvnodes", "unsigned integer"],
     ["CTLTYPE_LONG", "vm.kvm_size", "long integer"],
     ["CTLTYPE_ULONG", "vm.kmem_size", "unsigned long"],
+]
+
+OPAQUES = [
+    ("kern.clockrate", "S,clockinfo"),
+    ("vm.loadavg", "S,loadavg"),
+    ("kern.boottime", "S,timeval"),
+    ("vm.vmtotal", "S,vmtotal"),
+    # ("", "S,input_id"), # doesn't seem to exist
+    # ("hw.pagesizes", "S,pagesizes") # since FreeBSD 13.0
+    # ("", "S,efi_map_header"), # amd64 only
+    # ("machdep.smap", "S,bios_smap_xattr"), # amd64/i386 only
 ]

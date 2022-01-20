@@ -8,6 +8,14 @@ class TypeConv(abc.ABC):
     def c2p(self, data: bytes, size: int) -> typing.Any:
         return None
 
+    @property
+    def size(self) -> int:
+        """
+        If the size of the type is constant, it returns a positive number.
+        If not knowen, it returns 0.
+        """
+        return 0
+
 
 class NativeConv(TypeConv):
     _decoder: struct.Struct = None
@@ -19,13 +27,15 @@ class NativeConv(TypeConv):
         values = list(self._decoder.unpack_from(data, offset))
         return values[0]
 
+    @property
+    def size(self) -> int:
+        return self._decoder.size
+
 
 class CstringConv(TypeConv):
     def c2p(self, data: bytes, offset: int = 0) -> typing.Any:
-        if offset:
-            return data[offset:].decode()
-        else:
-            return data.decode()
+        end = data.find(b"\x00", offset)
+        return data[offset:end].decode()
 
 
 int = NativeConv("i")

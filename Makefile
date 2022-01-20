@@ -14,7 +14,13 @@ debug :
 	$(PYTHON) -m prdanlz --config prdanlz.json -l prdanlz.log -i 10 -d
 
 test :
-	$(PYTHON) -m pytest
+	$(PYTHON) -m pytest --cov=src
+
+coverage :
+	coverage report -m
+
+coverage-html :
+	coverage html
 
 build :
 	$(PYTHON) -m build
@@ -27,6 +33,6 @@ pip-install :
 	$(PYTHON) -m pip install $(PIPURL) prdanlz-uyota
 
 clean :
-	rm -rf build dist
+	rm -rf build dist htmlcov
 
-.PHONY : run test build upload clean
+.PHONY : run debug test build coverage coverage-html upload pip-install clean
