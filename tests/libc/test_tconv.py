@@ -5,7 +5,21 @@ import platform
 
 import prdanlz.libc.tconv as tconv
 
-BYTE = b"\x102Tv\x98\xba\xdc\xfe"  # 0xFEDCBA9876543210 in little endian
+from .. import fixture_sysctl
+
+
+def test_tconv_byte():
+    # GIVEN
+    nconv = tconv.byte
+
+    # WHEN
+    v = nconv.c2p(fixture_sysctl.BYTE)
+
+    # THEN
+    assert v == fixture_sysctl.BYTE
+
+    # WHEN & THEN - the size of these types are not zero
+    assert nconv.size == 0
 
 
 @pytest.mark.parametrize(
@@ -26,7 +40,7 @@ BYTE = b"\x102Tv\x98\xba\xdc\xfe"  # 0xFEDCBA9876543210 in little endian
 def test_tconv_natives(nconv, offset, expected):
     # GIVEN
     # WHEN
-    v = nconv.c2p(BYTE, offset)
+    v = nconv.c2p(fixture_sysctl.BYTE, offset)
 
     # THEN
     assert v == expected
@@ -52,7 +66,7 @@ def test_tconv_longs(nconv, expected32, expected64):
         expected = expected64
 
     # WHEN
-    v = nconv.c2p(BYTE, offset)
+    v = nconv.c2p(fixture_sysctl.BYTE, offset)
 
     # THEN
     assert v == expected

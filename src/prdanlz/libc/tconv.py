@@ -1,12 +1,10 @@
-import abc
 import typing
 import struct
 
 
-class TypeConv(abc.ABC):
-    @abc.abstractmethod
-    def c2p(self, data: bytes, size: int) -> typing.Any:
-        return None
+class TypeConv:
+    def c2p(self, data: bytes, offset: int = 0) -> typing.Any:
+        return data
 
     @property
     def size(self) -> int:
@@ -38,6 +36,8 @@ class CstringConv(TypeConv):
         return data[offset:end].decode()
 
 
+byte = TypeConv()
+
 int = NativeConv("i")
 uint = NativeConv("I")
 long = NativeConv("l")
@@ -53,3 +53,23 @@ int64 = NativeConv("q")
 uint64 = NativeConv("Q")
 
 cstr = CstringConv()
+
+
+TYPE2CONV = {
+    "integer": int,
+    "int": int,
+    "unsigned int": uint,
+    "long integer": long,
+    "long": long,
+    "unsigned long": ulong,
+    "int8_t": int8,
+    "uint8_t": uint8,
+    "int16_t": int16,
+    "uint16_t": uint16,
+    "int32_t": int32,
+    "uint32_t": uint32,
+    "int64_t": int64,
+    "uint64_t": uint64,
+    "time_t": int,
+    "suseconds_t": long,
+}

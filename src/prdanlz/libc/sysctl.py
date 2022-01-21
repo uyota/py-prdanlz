@@ -1,4 +1,5 @@
 import ctypes
+import time
 import typing
 
 from .libc import libc
@@ -40,7 +41,12 @@ TYPE2TCONV = {
     CTLTYPE_U32: tconv.uint32,
 }
 
+
 BUF_TYPE = ctypes.c_char * 1024  # 1024 is BUFSIZE in stdio.h
+
+"""
+sysctl system call related functions
+"""
 
 
 def pysysctl(
@@ -127,6 +133,121 @@ def oidvalue(oid: typing.List[int], buflen: int) -> bytes:
     return buf[:buf_length]  # c_char_Array to bytes
 
 
+"""
+sysctl Structure conversion
+"""
+
+CLOCKINFO = [
+    ("int", "hz"),  #             /* clock frequency */
+    ("int", "tick"),  #           /* micro-seconds per hz tick */
+    ("int", ""),
+    ("int", "stathz"),  #         /* statistics clock frequency */
+    ("int", "profhz"),  #         /* profiling clock frequency */
+]
+
+LOADAVG = [
+    ("uint32_t", "1min"),
+    ("uint32_t", "3min"),
+    ("uint32_t", "15min"),
+    ("long", "scale"),
+]
+
+TIMEVAL = [
+    ("time_t", "sec"),  #       /* seconds */
+    ("suseconds_t", "usec"),  # /* and microseconds */
+]
+
+VMTOTAL = [
+    ("uint64_t", "t_vm"),  #     /* total virtual memory */
+    ("uint64_t", "t_avm"),  #    /* active virtual memory */
+    ("uint64_t", "t_rm"),  #     /* total real memory in use */
+    ("uint64_t", "t_arm"),  #    /* active real memory */
+    ("uint64_t", "t_vmshr"),  #  /* shared virtual memory */
+    ("uint64_t", "t_avmshr"),  # /* active shared virtual memory */
+    ("uint64_t", "t_rmshr"),  #  /* shared real memory */
+    ("uint64_t", "t_armshr"),  # /* active shared real memory */
+    ("uint64_t", "t_free"),  #   /* free memory pages */
+    ("int16_t", "t_rq"),  #      /* length of the run queue */
+    ("int16_t", "t_dw"),  #      /* threads in ``disk wait'' (neg priority) */
+    ("int16_t", "t_pw"),  #      /* threads in page wait */
+    ("int16_t", "t_sl"),  #      /* threads sleeping in core */
+    ("int16_t", "t_sw"),  #      /* swapped out runnable/short block threads */
+]
+
+
+def optimize(
+    mapping: typing.List[typing.Tuple[str, str]]
+) -> typing.List[typing.Tuple[tconv.TypeConv, str]]:
+    return [(tconv.TYPE2CONV[i[0]], i[1]) for i in mapping]
+
+
+class DictConv(tconv.TypeConv):
+    def __init__(self, mapping: typing.List[typing.Tuple[tconv.TypeConv, str]]) -> None:
+        self._mapping = mapping
+
+    def c2p(self, data: bytes, offset: int = 0) -> typing.Any:
+        if self._mapping is None:
+            return data
+        value = {}
+        start = offset
+        for (conv, name) in self._mapping:
+            if name != "":
+                value[name] = conv.c2p(data, start)
+            start += conv.size
+        return value
+
+
+class LoadavgConv(DictConv):
+    _mapping = optimize(LOADAVG)
+
+    def __init__(self) -> None:
+        super().__init__(LoadavgConv._mapping)
+
+    def c2p(self, data: bytes, offset: int = 0) -> typing.Any:
+        map = super().c2p(data)
+        scale = float(map["scale"])
+        return (map["1min"] / scale, map["3min"] / scale, map["15min"] / scale)
+
+
+class TimevalConv(DictConv):
+    _mapping = optimize(TIMEVAL)
+
+    def __init__(self) -> None:
+        super().__init__(TimevalConv._mapping)
+
+    def c2p(self, data: bytes, offset: int = 0) -> typing.Any:
+        t = super().c2p(data)
+        return (t, time.ctime(t["sec"]))
+
+
+class PagesizesConv(tconv.TypeConv):
+    def c2p(self, data: bytes, offset: int = 0) -> typing.Any:
+        num = int(len(data) / tconv.long.size)
+        l = []
+        for i in range(num):
+            l.append(tconv.long.c2p(data, offset))
+            offset += tconv.long.size
+        return l
+
+
+clockinfo = DictConv(optimize(CLOCKINFO))
+loadavg = LoadavgConv()
+timeval = TimevalConv()
+vmtotal = DictConv(optimize(VMTOTAL))
+pagesizes = PagesizesConv()
+
+FMT2TCONV = {
+    "S,clockinfo": clockinfo,
+    "S,loadavg": loadavg,
+    "S,timeval": timeval,
+    "S,vmtotal": vmtotal,
+    "S,input_id": tconv.byte,
+    "S,pagesizes": pagesizes,
+    "S,efi_map_header": tconv.byte,
+    "S,bios_smap_xattr": tconv.byte,
+}
+
+
 class Sysctl:
     def __init__(self, name: str) -> None:
         self._name: str = name
@@ -159,8 +280,12 @@ class Sysctl:
 
     def _conv(self) -> tconv.TypeConv:
         if self._tconv is None:
-            self._tconv = TYPE2TCONV.get(self.type, None)
-            # TODO assert self._tconv
+            if self.type == CTLTYPE_OPAQUE:
+                self._tconv = FMT2TCONV.get(self.fmt, tconv.byte)
+            elif self.type != CTLTYPE_NODE:
+                self._tconv = TYPE2TCONV.get(self.type, tconv.byte)
+            else:
+                self._tconv = tconv.byte
         return self._tconv
 
     @property

@@ -1,3 +1,5 @@
+BYTE = b"\x102Tv\x98\xba\xdc\xfe"  # 0xFEDCBA9876543210 in little endian
+
 TYPES = [
     ["CTLTYPE_INT", "kern.osrevision", "integer"],
     ["CTLTYPE_STRING", "kern.ostype", "string"],

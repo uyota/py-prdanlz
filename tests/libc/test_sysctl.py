@@ -2,8 +2,10 @@ import pytest
 
 import copy
 import platform
+import subprocess
 
 import prdanlz.libc.sysctl as sysctl
+
 from .. import fixture_sysctl
 
 
@@ -15,7 +17,7 @@ def test_sysctl_name2oid():
     # THEN
     assert mib is not None
     assert type(mib) == list
-    assert mib == [2, 2147481691]  # system specific
+    # assert mib == [2, 2147481691]  # this is system specific and example value
 
 
 @pytest.mark.parametrize("name,expected", fixture_sysctl.OPAQUES)
@@ -117,7 +119,7 @@ def test_Sysctl__existing():
 
 
 @pytest.mark.parametrize("name,ctltype", [(i[1], i[2]) for i in fixture_sysctl.TYPES])
-def test_Sysctls(name, ctltype):
+def test_Sysctl(name, ctltype):
     # GIVEN
     ctl = sysctl.Sysctl(name)
 
@@ -134,3 +136,135 @@ def test_Sysctls(name, ctltype):
     else:
         assert type(value) == int
     assert value is not None
+
+
+@pytest.mark.parametrize("field", fixture_sysctl.TYPES)
+def test_Sysctl__description(field):
+    # GIVEN
+    name = field[1]
+    ctl = sysctl.Sysctl(name)
+
+    # WHEN & THEN
+    assert ctl.description != ""
+
+
+@pytest.mark.parametrize("name,expected", fixture_sysctl.OPAQUES)
+def test_Sysctl__fmt(name, expected):
+    # GIVEN
+    ctl = sysctl.Sysctl(name)
+
+    # WHEN & THEN
+    assert ctl.fmt != ""
+
+
+def test_Sysctl__node():
+    # GIVEN
+    s = sysctl.Sysctl("kern")
+
+    # WHEN
+    value = s.value
+
+    # THEN
+    assert type(value) == bytes
+
+
+@pytest.mark.parametrize("field", fixture_sysctl.TYPES)
+def test_Sysctl__value(field):
+    # GIVEN
+    name = field[1]
+
+    # WHEN
+    ctl = sysctl.Sysctl(name)
+    value = ctl.value
+
+    # THEN
+    stdout = subprocess.check_output(["/sbin/sysctl", "-n", name]).strip().decode()
+
+    if type(value) == int:
+        # few sysctl change a lot in short amount of time
+        assert value == pytest.approx(int(stdout), rel=0.01)
+    else:
+        assert str(value) == stdout
+
+
+def test_DictConv__no_mapping():
+    # GIVEN
+    d = sysctl.DictConv(None)
+
+    # WHEN
+    value = d.c2p(fixture_sysctl.BYTE)
+
+    # THEN
+    assert value == fixture_sysctl.BYTE
+
+
+def test_Sysctl__fmt__clockrate():
+    # GIVEN
+    s = sysctl.Sysctl("kern.clockrate")
+
+    # WHEN
+    value = s.value
+
+    # THEN
+    assert s
+    assert len(value) == 4
+    assert type(value) == dict
+
+
+def test_Sysctl__fmt__loadavg():
+    # GIVEN
+    s = sysctl.Sysctl("vm.loadavg")
+
+    # WHEN
+    value = s.value
+
+    # THEN
+    assert s
+    assert len(value) == 3
+    assert type(value) == tuple
+
+
+def test_Sysctl__fmt__timeval():
+    # GIVEN
+    s = sysctl.Sysctl("kern.boottime")
+
+    # WHEN
+    value = s.value
+
+    # THEN
+    assert s
+    assert len(value) == 2
+    assert type(value) == tuple
+    assert len(value[0]) == 2
+    assert type(value[0]) == dict
+    assert type(value[1]) == str
+
+
+def test_Sysctl__fmt__vmtotal():
+    # GIVEN
+    s = sysctl.Sysctl("vm.vmtotal")
+
+    # WHEN
+    value = s.value
+
+    # THEN
+    assert s
+    assert len(value) != 0
+    assert type(value) == dict
+
+
+def test_Sysctl__fmt__pagesizes():
+    # GIVEN
+    s = sysctl.Sysctl("hw.pagesizes")
+
+    # WHEN
+    value = s.value
+
+    # THEN
+    assert s
+    if "pagesizes" in s.fmt:  # FreeBSD 12.x doesn't have this type
+        assert type(value) == list
+        assert len(value) != 0
+    else:
+        assert type(value) == int
+        assert value != 0

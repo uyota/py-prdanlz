@@ -33,6 +33,6 @@ pip-install :
 	$(PYTHON) -m pip install $(PIPURL) prdanlz-uyota
 
 clean :
-	rm -rf build dist htmlcov
+	rm -rf build dist .coverage htmlcov `find . -name __pycache__`
 
 .PHONY : run debug test build coverage coverage-html upload pip-install clean
