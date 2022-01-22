@@ -2,8 +2,6 @@ import os
 import logging
 from typing import Dict
 
-import sysctl
-
 logger = logging.getLogger(__name__)
 
 

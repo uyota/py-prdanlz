@@ -66,11 +66,11 @@ def name2oid(name: str) -> typing.List[int]:
     length = ctypes.c_int(name2oid.NAME_TYPE.value * ctypes.sizeof(ctypes.c_int))
     p_length = ctypes.POINTER(ctypes.c_int)(length)
 
-    Res = ctypes.c_int * length.value
-    res = (Res)()
+    res_type = ctypes.c_int * length.value
+    res = (res_type)()
+    p_res = ctypes.POINTER(res_type)(res)
 
-    rc = pysysctl(name2oid.opr, ctypes.POINTER(Res)(res), p_length, p_name)
-    if not rc:
+    if not pysysctl(name2oid.opr, p_res, p_length, p_name):
         raise RuntimeError(f"Invalid sysctl name: '{name}'")
 
     oid_length = int(length.value / ctypes.sizeof(ctypes.c_int))
@@ -174,6 +174,13 @@ VMTOTAL = [
     ("int16_t", "t_sw"),  #      /* swapped out runnable/short block threads */
 ]
 
+INPUT_ID = [
+    ("uint16_t", "bustype"),
+    ("uint16_t", "vendor"),
+    ("uint16_t", "product"),
+    ("uint16_t", "version"),
+]
+
 
 def optimize(
     mapping: typing.List[typing.Tuple[str, str]]
@@ -235,13 +242,14 @@ loadavg = LoadavgConv()
 timeval = TimevalConv()
 vmtotal = DictConv(optimize(VMTOTAL))
 pagesizes = PagesizesConv()
+input_id = DictConv(optimize(INPUT_ID))
 
 FMT2TCONV = {
     "S,clockinfo": clockinfo,
     "S,loadavg": loadavg,
     "S,timeval": timeval,
     "S,vmtotal": vmtotal,
-    "S,input_id": tconv.byte,
+    "S,input_id": input_id,
     "S,pagesizes": pagesizes,
     "S,efi_map_header": tconv.byte,
     "S,bios_smap_xattr": tconv.byte,

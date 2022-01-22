@@ -39,7 +39,6 @@ py-prdanlz is not yet in FreeBSD's ports.
 However, ports' Makefile is prepared with the code base.
 
 ```
-$ pkg install py##-sysctl
 $ cd /usr/ports
 $ fetch https://github.com/uyota/py-prdanlz/archive/refs/tags/v0.0.5.tar.gz
 $ tar xf v0.0.5.tar.gz

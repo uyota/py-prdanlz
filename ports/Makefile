@@ -12,8 +12,6 @@ COMMENT=	Periodic Analisys program
 LICENSE=	BSD2CLAUSE
 LICENSE_FILE=   ${WRKSRC}/LICENSE
 
-RUN_DEPENDS=	${PYTHON_PKGNAMEPREFIX}sysctl>=0.3.1:devel/py-sysctl@${PY_FLAVOR}
-
 USES=		python
 USE_PYTHON=	distutils autoplist
 

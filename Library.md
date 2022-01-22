@@ -2,19 +2,60 @@ There are 2 Python sysctl libraries in FreeBSD ports.
 
 # Dependencies
 
-prdanlz uses py-sysctl.
+prdanlz does not depend on other libraries
 
-1. FreeBSD pkg version 0.3.1
-2. PyPI version 0.3.3 - prior version cannot be installed with pip
+## Options
 
-# sysctl Libraries
+There were 2 python sysctl library implementations: 'py-sysctl' and 'py-freebsd_sysctl'.
+prdanlz started with 'py-sysct' library.
+It was a nice library to use for a proof of concept but came to limits shortly.
+'py-freebsd_sysctl' had good examples of C-binding and making calls to
+C APIs in libc. These were helpful starters.
+
+1. prdanlz needed to use not only sysctl but other system calls and thus reusable byte converters
+1. Both libraries had primitive type conversion errors
+1. Both had API limitations and performance issues
+
+Sysctl calls in prdanlz is 5 times faster than that of 'py-sysctl' and
+'py-freebsd_sysctl' in nearly all use cases.
+prdanlz makes periodic calls to sysctl and thus it optimizes to call
+1 sysctl system call per fetch; other libraries call 5 sysctl system
+calls per fetch.
+
+'py-freebsd_sysctl' had some activates and accepted bug fixes.
+'py-sysctl' didn't seem to have much activities but had APIs that
+can be used to work-around the bugs.
+
+Afte a proof of concept ran, it appeared what prdanlz needed most was
+accessing struct sysctl types.  Neither libraries supported struct types.
+
+# Old Notes
+
+## sysctl Libraries
 
 'py-freebsd-sysctl' and 'py-sysctl' exist.
 Both use C-binding to access sysctl.
 
-## py-prdanlz uses py-sysctl
+# Pros and Cons
 
-Both have bugs but py-sysctl bugs were easier to deal in Python.
+## py-sysctl
+### Pros
+1. Everything is in C
+### Cons
+1. Can fetch value only once
+1. Format string isn't accessible
+1. Low activities
+1. Not OOP
+1. Conversion bugs for unsinged types
+
+## py-freebsd_sysctl
+### Pros
+1. Use ctypes and strruct in Python
+1. Moderate activities
+### Cons
+1. Can fetch value only once
+1. Too many class instantiations and need optimizations
+1. Test cases are failing
 
 # py-sysctl
 
