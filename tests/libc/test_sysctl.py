@@ -2,22 +2,34 @@ import pytest
 
 import copy
 import platform
-import subprocess
 
 import prdanlz.libc.sysctl as sysctl
 
-from .. import fixture_sysctl
+from .. import fixture_sysctl, syscall
 
 
 def test_sysctl_name2oid():
     # GIVEN
+    name = "vm.kvm_size"
+
     # WHEN
-    mib = sysctl.name2oid("vm.kvm_size")
+    mib = sysctl.name2oid(name)
 
     # THEN
     assert mib is not None
     assert type(mib) == list
     # assert mib == [2, 2147481691]  # this is system specific and example value
+
+
+def test_pysysctlnametomib():
+    # GIVEN
+    name = "vm.kvm_size"
+
+    # WHEN
+    mib = sysctl.pysysctlnametomib(name)
+
+    # THEN
+    assert mib == sysctl.name2oid(name)
 
 
 @pytest.mark.parametrize("name,expected", fixture_sysctl.OPAQUES)
@@ -30,6 +42,7 @@ def test_sysctl_oidfmt(name, expected):
 
     # THEN
     assert fmt[1] == expected
+    assert mib == sysctl.pysysctlnametomib(name)
 
 
 def test_sysctl_description():
@@ -95,6 +108,18 @@ def test_sysctl_values(name):
     assert type(value) == bytes
 
 
+def test_sysctlnametomib():
+    # GIVEN
+    name = "vm.swap_info"
+
+    # WHEN
+    mib = sysctl.pysysctlnametomib(name)
+
+    # THEN
+    assert type(mib) == list
+    assert mib == sysctl.name2oid(name)
+
+
 def test_Sysctl__non_existing():
     # GIVEN
     with pytest.raises(RuntimeError) as e:
@@ -157,15 +182,15 @@ def test_Sysctl__fmt(name, expected):
     assert ctl.fmt != ""
 
 
-def test_Sysctl__node():
-    # GIVEN
-    s = sysctl.Sysctl("kern")
-
-    # WHEN
-    value = s.value
-
-    # THEN
-    assert type(value) == bytes
+# def test_Sysctl__node():
+#    # GIVEN
+#    s = sysctl.Sysctl("kern")
+#
+#    # WHEN
+#    value = s.value
+#
+#    # THEN
+#    assert type(value) == bytes
 
 
 @pytest.mark.parametrize("field", fixture_sysctl.TYPES)
@@ -178,7 +203,7 @@ def test_Sysctl__value(field):
     value = ctl.value
 
     # THEN
-    stdout = subprocess.check_output(["/sbin/sysctl", "-n", name]).strip().decode()
+    stdout = syscall(["/sbin/sysctl", "-n", name])
 
     if type(value) == int:
         # few sysctl change a lot in short amount of time
@@ -268,3 +293,26 @@ def test_Sysctl__fmt__pagesizes():
     else:
         assert type(value) == int
         assert value != 0
+
+
+def test_Sysctl__swap_info():
+    # GIVEN
+    name = "vm.swap_info"
+    s = sysctl.Sysctl(name)
+
+    # WHEN
+    value = s.value
+    mib = sysctl.pysysctlnametomib(name)
+
+    # THEN
+    assert type(value) == list
+    assert len(value) >= 1
+    assert value[-1]["device"] == "Total"
+
+    if len(value) > 1:
+        swaps = syscall(["/sbin/swapctl", "-l", "-k"]).split("\n")[1:]
+        for i, swap in enumerate(swaps):
+            swap = swap.split()
+            assert swap[0] == value[i]["device"]
+            assert int(swap[1]) == value[i]["xsw_nblks"] / 1024
+            assert int(swap[2]) == value[i]["xsw_used"] / 1024

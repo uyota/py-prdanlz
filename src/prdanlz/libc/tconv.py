@@ -59,9 +59,11 @@ TYPE2CONV = {
     "integer": int,
     "int": int,
     "unsigned int": uint,
+    "uint": uint,
     "long integer": long,
     "long": long,
     "unsigned long": ulong,
+    "ulong": ulong,
     "int8_t": int8,
     "uint8_t": uint8,
     "int16_t": int16,
@@ -70,6 +72,7 @@ TYPE2CONV = {
     "uint32_t": uint32,
     "int64_t": int64,
     "uint64_t": uint64,
-    "time_t": int,
+    "size_t": ulong,  # based on /usr/include/x86/_types.h
+    "time_t": int,  # 8 bytes on all supported architectures except i386 per man arch
     "suseconds_t": long,
 }

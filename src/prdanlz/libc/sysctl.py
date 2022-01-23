@@ -1,4 +1,5 @@
 import ctypes
+import struct
 import time
 import typing
 
@@ -50,7 +51,10 @@ sysctl system call related functions
 
 
 def pysysctl(
-    oid: typing.List[int], oldp: typing.Any, oldlenp, newp: ctypes.c_char_p
+    oid: typing.List[int],
+    oldp: typing.Any,
+    oldlenp,
+    newp: typing.Optional[ctypes.c_char_p],
 ) -> bool:
     oid_len = len(oid)
     qoid_type = ctypes.c_uint * oid_len
@@ -58,6 +62,21 @@ def pysysctl(
     p_qoid = ctypes.POINTER(qoid_type)(qoid)
     l = len(newp.value) if newp else 0
     return libc.sysctl(p_qoid, oid_len, oldp, oldlenp, newp, l) == 0
+
+
+def pysysctlnametomib(name: str) -> typing.Optional[typing.List[int]]:
+    p_name = ctypes.c_char_p(name.encode())
+
+    mib_type = ctypes.c_int * 16  # from swapctl
+    mib = (mib_type)()
+    p_mib = ctypes.POINTER(ctypes.c_int)(mib)
+
+    length = ctypes.c_size_t(16)
+    p_length = ctypes.POINTER(ctypes.c_size_t)(length)
+
+    if libc.sysctlnametomib(p_name, p_mib, p_length) == -1:
+        return None
+    return mib[: length.value]  # c_int_Array to List[int]
 
 
 def name2oid(name: str) -> typing.List[int]:
@@ -128,7 +147,8 @@ def oidvalue(oid: typing.List[int], buflen: int) -> bytes:
     buf_length = ctypes.sizeof(buf)
     p_buf_length = ctypes.POINTER(ctypes.c_int)(ctypes.c_int(buf_length))
 
-    pysysctl(oid, p_buf_void, p_buf_length, None)
+    if not pysysctl(oid, p_buf_void, p_buf_length, None):
+        raise RuntimeError(f"Invalid sysctl mib: '{oid}'")
 
     return buf[:buf_length]  # c_char_Array to bytes
 
@@ -189,6 +209,8 @@ def optimize(
 
 
 class DictConv(tconv.TypeConv):
+    _sizeof = None
+
     def __init__(self, mapping: typing.List[typing.Tuple[tconv.TypeConv, str]]) -> None:
         self._mapping = mapping
 
@@ -202,6 +224,16 @@ class DictConv(tconv.TypeConv):
                 value[name] = conv.c2p(data, start)
             start += conv.size
         return value
+
+    @property
+    def sizeof(self) -> int:
+        """
+        The size of the C-struct with padding considered
+        """
+        if DictConv._sizeof is None:
+            fmts = [nconv._decoder.format for (nconv, name) in self._mapping]
+            DictConv._sizeof = struct.Struct("".join(fmts)).size
+        return DictConv._sizeof
 
 
 class LoadavgConv(DictConv):
@@ -292,12 +324,16 @@ class Sysctl:
                 self._tconv = FMT2TCONV.get(self.fmt, tconv.byte)
             elif self.type != CTLTYPE_NODE:
                 self._tconv = TYPE2TCONV.get(self.type, tconv.byte)
+            elif self.name == "vm.swap_info":
+                self._tconv = SwapinfoConv(self)
             else:
                 self._tconv = tconv.byte
         return self._tconv
 
     @property
     def raw_value(self) -> bytes:
+        if self.type == CTLTYPE_NODE:
+            return b""
         buflen = self._reserve()
         return oidvalue(self._mib, buflen)
 
@@ -317,3 +353,49 @@ class Sysctl:
             if self._buflen == 0:
                 self._buflen = 2 * oidsize(self._mib)
         return self._buflen
+
+
+XSWDEV = [
+    ("uint", "xsw_version"),
+    ("uint64_t", "xsw_dev"),  # dev_t
+    ("int", "xsw_flags"),
+    ("int", "xsw_nblks"),
+    ("int", "xsw_used"),
+]
+
+
+class SwapinfoConv(tconv.TypeConv):
+    _swconv = None
+    _pagesize = None
+    _sizeof = None
+
+    def __init__(self, node: Sysctl) -> None:
+        self._name = node._name
+        self._mib = node._mib
+        if SwapinfoConv._sizeof is None:
+            SwapinfoConv._swconv = DictConv(optimize(XSWDEV))
+            SwapinfoConv._sizeof = SwapinfoConv._swconv.sizeof
+            SwapinfoConv._pagesize = libc.getpagesize()
+
+    def c2p(self, data: bytes, offset: int = 0) -> typing.Any:
+        devs = []
+        nblks = 0
+        used = 0
+        try:
+            i = 0
+            while True:
+                data = oidvalue(self._mib + [i], SwapinfoConv._sizeof)
+                swdev = SwapinfoConv._swconv.c2p(data)
+                swdev["xsw_nblks"] *= SwapinfoConv._pagesize
+                swdev["xsw_used"] *= SwapinfoConv._pagesize
+                device = libc.devname(swdev["xsw_dev"], 0x2000)
+                if device != b"#NODEV":
+                    swdev["device"] = "/dev/" + device.decode()
+                devs.append(swdev)
+                nblks += swdev["xsw_nblks"]
+                used += swdev["xsw_used"]
+                i += 1
+        except RuntimeError:
+            pass
+        devs.append({"device": "Total", "xsw_nblks": nblks, "xsw_used": used})
+        return devs
