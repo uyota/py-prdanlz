@@ -54,9 +54,10 @@ def parse_args():
 
 def analyze(args):
     if args.log:
-        logging.basicConfig(
-            filename=args.log, level=logging.DEBUG if args.debug else logging.INFO
-        )
+        lvl = logging.DEBUG if args.debug else logging.INFO
+        fmt = "%(asctime)s %(levelname)s %(name)s | %(message)s"
+        dtfmt = "%Y-%m-%d_%H:%M:%S"
+        logging.basicConfig(filename=args.log, level=lvl, format=fmt, datefmt=dtfmt)
     else:
         logging.disable(logging.CRITICAL)
 
