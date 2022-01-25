@@ -1,0 +1,26 @@
+{
+    "variables": {
+        "vm__swap_info": {"sysctl": "vm.swap_info"}
+    },
+    "incidents": {
+        "swap_usage": {
+            "description": "Swap Usage Monitor",
+            "error": {
+		"percent": "90%",
+                "trigger": "{vm__swap_info[-1]['xsw_used']} > ( 0.9 * {vm__swap_info[-1]['xsw_nblks']})",
+                "untrigger": "{vm__swap_info[-1]['xsw_used']} < ( 0.85 * {vm__swap_info[-1]['xsw_nblks']})",
+                "escalation": "logger 'Swap usage is over {percent} of '{vm__swap_info[-1]['xsw_nblks'] / 1024 / 1024} 'MB'"
+            },
+            "warn": {
+		"percent": "80%",
+                "trigger": "{vm__swap_info[-1]['xsw_used']} > ( 0.8 * {vm__swap_info[-1]['xsw_nblks']})",
+                "untrigger": "{vm__swap_info[-1]['xsw_used']} < ( 0.75 * {vm__swap_info[-1]['xsw_nblks']})"
+            },
+            "info": {
+		"percent": "60%",
+                "trigger": "{vm__swap_info[-1]['xsw_used']} > ( 0.6 * {vm__swap_info[-1]['xsw_nblks']})",
+                "untrigger": "{vm__swap_info[-1]['xsw_used']} < ( 0.5 * {vm__swap_info[-1]['xsw_nblks']})"
+            }
+        }
+    }
+}

@@ -7,12 +7,11 @@
     },
     "incidents": {
         "loadavg": {
-            "description": "Above 80% of CPUs are in use over 3 mins",
-            "error": {
+            "description": "Above 80% of CPUs are in use over 1 min",
+            "warn": {
                 "trigger": "{vm__loadavg[1]} > ( 0.8 * {hw__ncpu} )",
                 "untrigger": "{vm__loadavg[1]} < ( 0.6 * {hw__ncpu} )",
-                "escalation": "logger 'LoadAvg 3min load avg is over 80% of cpus: {vm__loadavg[0]} {vm__loadavg[1]}'",
-                "remediation": ""
+                "escalation": "logger 'Over 80% of CPUs are in used for 1 min}'"
             }
         }
     }

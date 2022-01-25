@@ -15,6 +15,11 @@ Each level defines a range of a value.
 1. Monitor a system and report an incident
 1. Monitor a system and take actions/remediation automatically
 
+# Examples
+
+1. (Swap usage monitor)[example/swap_usage.md]
+1. (CPU usage monitor)[example/cpu_usage.md]
+
 ## Aiming
 
 1. Help monitoring a small set of FreeBSD machines
