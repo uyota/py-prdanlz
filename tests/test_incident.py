@@ -117,6 +117,39 @@ def test_incident():
         assert e is None
 
 
+def test_incident_critial_is_not_a_level_by_default():
+    # GIVEN
+    incident_dict = {
+        "description": "Check the number of CPUs",
+        "critical": LEVEL_DICT,
+    }
+
+    # WHEN
+    with pytest.raises(Exception) as e:
+        i = Incident("test", incident_dict)
+
+        # THEN
+        assert e
+        assert i is None
+
+
+def test_incident_critial_is_a_custom_level():
+    # GIVEN
+    incident_dict = {
+        "description": "Check the number of CPUs",
+        "critical": LEVEL_DICT,
+    }
+    Incident.level = ["critical"]
+
+    # WHEN
+    with pytest.raises(Exception) as e:
+        i = Incident("test", incident_dict)
+
+        # THEN
+        assert e is None
+        assert i
+
+
 def test_incident_desc_instead_of_description():
     # GIVEN
     incident_dict = copy.deepcopy(INCIDENT_DICT1)

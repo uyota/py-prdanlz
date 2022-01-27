@@ -5,7 +5,7 @@ import signal
 import sys
 import os
 
-from . import Monitor
+from . import Monitor, Incident
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +37,32 @@ def parse_args():
         dest="log",
         type=str,
         required=False,
-        help="log file.  If not specified, logging is disabled",
+        help="the name of the log file.  If not specified, logging is disabled",
+    )
+
+    parser.add_argument(
+        "--log-format",
+        dest="logformat",
+        type=str,
+        default="%(asctime)s %(levelname)s %(name)s | %(message)s",
+        help="log line format",
+    )
+
+    parser.add_argument(
+        "--log-dateformat",
+        dest="logdateformat",
+        type=str,
+        default="%Y-%m-%d_%H:%M:%S",
+        help="log date format",
+    )
+
+    parser.add_argument(
+        "--levels",
+        dest="levels",
+        type=str,
+        default=["error", "warn", "info"],
+        nargs="+",
+        help="specify custom levels",
     )
 
     parser.add_argument(
@@ -54,13 +79,16 @@ def parse_args():
 
 def analyze(args):
     if args.log:
-        lvl = logging.DEBUG if args.debug else logging.INFO
-        fmt = "%(asctime)s %(levelname)s %(name)s | %(message)s"
-        dtfmt = "%Y-%m-%d_%H:%M:%S"
-        logging.basicConfig(filename=args.log, level=lvl, format=fmt, datefmt=dtfmt)
+        logging.basicConfig(
+            filename=args.log,
+            level=logging.DEBUG if args.debug else logging.INFO,
+            format=args.logformat,
+            datefmt=args.logdateformat,
+        )
     else:
         logging.disable(logging.CRITICAL)
 
+    Incident.levels = args.levels
     m = Monitor(args.interval)
     for file in args.config:
         with file as json_file:

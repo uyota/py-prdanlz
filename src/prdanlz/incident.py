@@ -10,12 +10,11 @@ def _clone_with_primitives(input: Dict) -> Dict:
 
 
 class Incident:
+    levels = ["error", "warn", "info"]
+
     class Level:
         def __init__(
-            self,
-            level: str,
-            params: Dict,
-            fallback: Dict = {},
+            self, level: str, params: Dict, fallback: Dict = {},
         ):
             assert level
             self._level = level
@@ -72,7 +71,7 @@ class Incident:
         self._levels = {}
         fallback = {}
         err = None
-        for key in ["error", "warn", "info"]:
+        for key in Incident.levels:
             try:
                 level = Incident.Level(key, params[key], fallback)
                 self._levels[key] = level
@@ -85,9 +84,9 @@ class Incident:
         if count == 0:
             if err:
                 raise Exception(f"{err} of '{name}' incident")
-            raise Exception(
-                "One or more of 'info', 'warn' and/or 'error' must be specified"
-            )
+            l = [f"'{i}'" for i in Incident.levels]
+            msg = f"One or more of {', '.join(l[:-1])} and/or {l[-1]} must be specified"
+            raise Exception(msg)
         self._name: str = name
         self._vars: Dict = _clone_with_primitives(params)
 
@@ -104,7 +103,7 @@ class Incident:
     def escalated(self, locals: Dict) -> bool:
         in_range = False
         my_locals = None
-        for key in ["error", "warn", "info"]:  # be explicit about ordering
+        for key in Incident.levels:  # be explicit about ordering
             level = self._levels[key]
             if level:
                 if in_range:

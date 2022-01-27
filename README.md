@@ -52,7 +52,7 @@ $ make fetch makesum install
 ```
 
 1. Check [release page](https://github.com/uyota/py-prdanlz/releases) for the latest version.
-1. Ports "distinfo" file contains timestamp, checksum, and size of the release file. This file cannot be maintained well in the source repo itself due to chiken and egg problem.  Run 'makesum' to generate it as a part of build process.
+1. Ports "distinfo" file contains timestamp, checksum, and size of the release file. This file cannot be maintained well in the source repo itself due to chicken and egg problem.  Run 'makesum' to generate it as a part of build process.
 
 
 # How to Setup
@@ -166,6 +166,16 @@ An incident is a directory.
 
 1. Requires "description"
 1. Requires either one or more of "error", "warn", "info" level definition
+
+#### Custom Levels
+
+The 3 tier level of "error", "warn", and "info" is a preset value.
+Custom level can be specified with --levels option.
+The levels are ordered from highest to lowest severity.
+
+```
+% python --levels critical error warning info ...
+```
 
 ### "Level" Definition
 
