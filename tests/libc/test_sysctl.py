@@ -207,7 +207,7 @@ def test_Sysctl__value(field):
 
     if type(value) == int:
         # few sysctl change a lot in short amount of time
-        assert value == pytest.approx(int(stdout), rel=0.01)
+        assert value == pytest.approx(int(stdout), rel=0.1)
     else:
         assert str(value) == stdout
 
