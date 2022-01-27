@@ -52,8 +52,8 @@ def test_tconv_natives(nconv, offset, expected):
 @pytest.mark.parametrize(
     "nconv,expected32,expected64",
     [
-        (tconv.long, -19088744, 0),
-        (tconv.ulong, 4275878552, 0),
+        (tconv.long, -19088744, -81985529216486896),
+        (tconv.ulong, 4275878552, 18364758544493064720),
     ],
 )
 def test_tconv_longs(nconv, expected32, expected64):
