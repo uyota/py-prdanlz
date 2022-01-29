@@ -26,6 +26,7 @@ build :
 	$(PYTHON) -m build
 
 upload :
+	ls -l dist
 	$(PYTHON) -m twine upload $(REPO) dist/*
 
 pip-install :

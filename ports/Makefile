@@ -2,12 +2,12 @@
 # $FreeBSD$
 
 PORTNAME=	prdanlz
-PORTVERSION=	0.1.0
+PORTVERSION=	0.1.1
 CATEGORIES=	sysutils python
 PKGNAMEPREFIX=	${PYTHON_PKGNAMEPREFIX}
 
 MAINTAINER=	ota@j.email.ne.jp
-COMMENT=	Periodic Analisys program
+COMMENT=	Periodic Analysis program
 
 LICENSE=	BSD2CLAUSE
 LICENSE_FILE=   ${WRKSRC}/LICENSE
