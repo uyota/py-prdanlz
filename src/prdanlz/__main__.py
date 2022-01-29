@@ -28,7 +28,7 @@ def parse_args():
         dest="interval",
         type=float,
         required=False,
-        help="iternal in second to re-evaludate rules",
+        help="interval in second to re-evaluate rules",
     )
 
     parser.add_argument(
@@ -99,6 +99,9 @@ def analyze(args):
             if "variables" in setting:
                 logger.debug(f"Loading variables from '{file.name}'")
                 m.add_variables(setting["variables"])
+            if "derivatives" in setting:
+                logger.debug(f"Loading derivatives from '{file.name}'")
+                m.add_derivatives(setting["derivatives"])
             if "incidents" in setting:
                 logger.debug(f"Loading incidents from '{file.name}'")
                 m.add_incidents(setting["incidents"])

@@ -40,7 +40,7 @@ class Incident:
             my_locals = {**locals, **self._vars}
             logger.debug(f"Checking trigger='{self._trigger}' at level={self._level}")
             expr = eval(f'f"{self._trigger}"', {"__builtins__": {}}, my_locals)
-            logger.debug(f"Resolved to exprssion='{expr}'")
+            logger.debug(f"Resolved to expression='{expr}'")
             if eval(expr, {"__builtins__": {}}, my_locals):
                 if not self._triggered:
                     cmd = eval(f'f"{self._escalation}"', my_locals)
@@ -53,7 +53,7 @@ class Incident:
                     f"Checking untrigger='{self._untrigger}' at level='{self._level}"
                 )
                 expr = eval(f'f"{self._untrigger}"', {"__builtins__": {}}, my_locals)
-                logger.debug(f"Resolved to exprssion='{expr}'")
+                logger.debug(f"Resolved to expression='{expr}'")
                 if eval(expr, {"__builtins__": {}}, my_locals):
                     self._triggered = False
                     logger.debug(f"Untriggered at level={self._level}")

@@ -2,7 +2,8 @@
 
 Prdanlz can refresh data and evaluate rules periodically.
 It fetch data and save to a variable.
-Once all variables are refreshed, each incident rule is evaluated based on variables.
+Derivatives are calculated from variables.
+Once all variables are refreshed, each incident rule is evaluated based on variables and derivatives.
 
 An incident is a unit of monitoring.
 Each incident defines 3 levels: "error", "warn", and "info."
@@ -59,6 +60,7 @@ $ make fetch makesum install
 
 1. Define 'constants' in JSON file
 1. Define 'variables' in JSON file
+1. Define 'derivatives' in JSON file
 1. Define 'incidents' in JSON file
 1. Invoke prdanlz program with interval and JSON file(s)
 
@@ -72,7 +74,8 @@ $ make fetch makesum install
 
 1. Fetch all of constants at startup
 1. After waiting an interval second, fetch all variables
-1. After all variables are fetched, evaluate all of incidents
+1. After all variables are fetched, calcarate all of derivatives
+1. After all variables are fetched and derivatives are calculated, evaluate all of incidents
 1. If a value moves into a new level of an incident, trigger an action
 1. Wait for another interval period and repeat
 
@@ -112,15 +115,26 @@ An incident can access all of variables regardless of the order in JSON files.
 
 All JSON configuration keywords are spelled in lower cases only.
 
-## "Constants" and "variables"
+## "constants", "variables", and "derivatives"
 
-"Constants" and "variables" are both dictionaries.
+All of "constants", "variables", "derivatives" are all dictionaries.
 
-"Constants" and "variables" are both variables but "constants"
-are only fetched once while "variables" are re-fetched at each cycle.
+All of "constants", "variables", "derivatives" are variables but they
+have different properties.
+"constants" are only fetched once and thus resulting the same value
+all times during the monitoring.
+"variables" are re-fetched at each cycle.
+"derivatives" are calculated variables; they are derived from "constants" and
+variables".
 
-Both of "constants" and "variables" are stored in their given names.
-In addition, "variables" generates variables start with "last_"
+Both of "constants" and "variables" are to capture system output and not
+convenient to manipulate their values on the fly at same time.
+"derivatives" can be used to calculate from "constants" and "variables"
+to run arithmetics on and store their results.
+
+All of "constants" and "variables" are stored in their given names.
+In addition, "variables" and "derivatives" generate variables that
+start with "last_" allowing to refer to previous values.
 
 A dictionary key specifies the name of a variable and dictionary value
 represents how to fetch data.
@@ -156,6 +170,17 @@ Prdanlz uses 'py-sysctl' library and doesn't invoke external 'sysctl' command.
 "hw__ncpu": {"sysctl": "hw.ncpu"}
 ```
 
+### Order of Evaluations among Variables
+
+1. All "constants" are fetched at start time and only once, first.
+1. Then, all "variables" are fetched at each cycle.
+1. Then, all "derivatives" are calculated.
+
+Priorities are not defined among same type of variables.
+Therefore, they cannot depend on each other.
+However, different tiers of variables are always evaluated in the same
+order as above and thus safe to assume values are latest.
+
 ## "Incidents" and their "Levels"
 
 "Incidents" is a dictionary that contains "indecent" definitions.
@@ -181,9 +206,15 @@ The levels are ordered from highest to lowest severity.
 
 A level is a directory.
 
+1. Requires "description"
 1. Requires "trigger"
 1. Requires "untrigger"
 1. Requires "escalation"
+
+#### "description"
+
+Useful description is helpful to keep track what it does, how it does,
+who wants what.
 
 #### "trigger"
 
@@ -240,6 +271,9 @@ An useful way is send '{description} with 'logger' to write to syslog.
 
 If any of "trigger", "untrigger", or "escalation" is not specified,
 lower levels assume they are same as a higher level entry.
+
+Use "level" local variables to simplify and re-use same trigger, untrigger,
+and/or escalation at multiple levels.
 
 Given
 ```
