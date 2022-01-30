@@ -1,7 +1,7 @@
 # Periodic Analyzer - prdanlz
 
 Prdanlz can refresh data and evaluate rules periodically.
-It fetch data and save to a variable.
+It fetches data and saves to a variable.
 Derivatives are calculated from variables.
 Once all variables are refreshed, each incident rule is evaluated based on variables and derivatives.
 
@@ -18,8 +18,8 @@ Each level defines a range of a value.
 
 # Examples
 
-1. (Swap usage monitor)[example/swap_usage.md]
-1. (CPU usage monitor)[example/cpu_usage.md]
+1. [Swap usage monitor](./example/swap_usage.md)
+1. [CPU usage monitor](./example/cpu_usage.md)
 
 ## Aiming
 
@@ -250,7 +250,7 @@ Given
 1. When value changes [ 0, 95 ], 95 is a trigger
 1. When value changes [ 0, 88 ], 88 is NOT a trigger
 1. When value changes [ 0, 95, 83 ], 95 is a trigger and 83 is an untrigger
-1. When value changes [ 0, 95, 93 ], 95 is a trigger but 93 is not
+1. When value changes [ 0, 95, 93 ], 95 is a trigger but 93 is neither trigger nor untrigger
 1. When value changes [ 0, 95, 89, 91 ], 95 is an trigger but neither 89 nor 91
 
 #### "escalation" and its Format
