@@ -64,7 +64,8 @@ class Monitor:
             self._locals[v.name] = v.value
             logger.info(f"Constant '{v.name}' holds {v.value}")
 
-        if self._interval:
+        self.fetch_and_evaluate()
+        if self._interval and self.interval > 0:
             thread: threading.Thread = None
             self._running = threading.Event()
             while not self._running.wait(self._interval):
@@ -73,8 +74,6 @@ class Monitor:
                 if not self._running.is_set():
                     thread = threading.Thread(target=self.fetch_and_evaluate)
                     thread.start()
-        else:
-            self.fetch_and_evaluate()
 
     def fetch_and_evaluate(self) -> None:
         locals = copy.deepcopy(self._locals)
