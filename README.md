@@ -18,8 +18,8 @@ Each level defines a range of a value.
 
 # Examples
 
-1. [Swap usage monitor](./example/swap_usage.md)
-1. [CPU usage monitor](./example/cpu_usage.md)
+1. [Swap usage monitor](./examples/swap_usage.md)
+1. [CPU load monitor](./examples/cpu_load.md)
 
 ## Aiming
 

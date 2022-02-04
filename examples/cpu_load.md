@@ -21,7 +21,7 @@ its load is 10.
 In order to calcarate CPU usage, both the number of CPUs and load average are
 important.
 
-## (cpu_usage.json)[cpu_usage.json]
+## [cpu_load.json](./cpu_load.json)
 
 This configuration is an example to monitor by percentage cpu usage over 1 minutes.
 

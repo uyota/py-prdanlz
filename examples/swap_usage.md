@@ -4,7 +4,7 @@ Swap usage information is available on FreeBSD via sysctl "vm.swap_info."
 "vm.swap_info" is a special NODE type such that sysctl.1 cannot retrieve
 but swapctl -l can.
 
-## (swap_usage.json)[swap_usage.json]
+## [swap_usage.json](./swap_usage.json)
 
 This configuration is an example to monitor by percentage usage
 of swap space.
