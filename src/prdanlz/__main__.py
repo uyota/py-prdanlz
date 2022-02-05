@@ -50,8 +50,8 @@ def parse_args():
         "--interval",
         dest="interval",
         type=float,
-        required=False,
-        help="interval in second to re-evaluate rules",
+        default=-1,
+        help="positive number to specify interval in second to re-evaluate rules",
     )
 
     parser.add_argument(

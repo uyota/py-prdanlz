@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 
 
 class Monitor:
-    def __init__(self, interval: Optional[float] = None):
+    def __init__(self, interval: float = -1):
         self._interval = interval
         self._constants: Set[Variable] = set()
         self._variables: Set[Variable] = set()
@@ -42,7 +42,7 @@ class Monitor:
         self._locals: Dict[str, Any] = {}
         self._running: Optional[Event] = None
 
-        if self._interval:
+        if self._interval > 0:
             signal.signal(signal.SIGINT, self.exit)
             signal.signal(signal.SIGTERM, self.exit)
             logger.info(f"Monitoring is set for {interval} seconds.")
@@ -88,7 +88,7 @@ class Monitor:
             logger.info(f"Constant '{v.name}' holds {v.value}")
 
         self.fetch_and_evaluate()
-        if self._interval and self.interval > 0:
+        if self._interval > 0:
             thread: threading.Thread = None
             self._running = threading.Event()
             while not self._running.wait(self._interval):
