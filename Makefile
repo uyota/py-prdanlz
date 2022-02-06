@@ -5,6 +5,9 @@ PYTHON ?= python
 # REPO = --repository testpypi
 # PIPURL = --index-url https://test.pypi.org/simple/
 
+PRDANLZ ?= $(PYTHON) -m prdanlz -l prdanlz.log -i $(INTERVAL)
+INTERVAL ?= 10
+
 default : test
 
 run :
@@ -37,3 +40,11 @@ clean :
 	rm -rf build dist .coverage htmlcov `find . -name __pycache__`
 
 .PHONY : run debug test build coverage coverage-html upload pip-install clean
+
+
+cpu_load :
+	$(PRDANLZ) --config examples/cpu_load.json
+swap_usage :
+	$(PRDANLZ) --config examples/swap_usage.json
+battery :
+	$(PRDANLZ) --config examples/battery.json

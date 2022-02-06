@@ -20,6 +20,7 @@ Each level defines a range of a value.
 
 1. [Swap usage monitor](./examples/swap_usage.md)
 1. [CPU load monitor](./examples/cpu_load.md)
+1. [Battery monitor](./examples/battery.md)
 
 ## Aiming
 

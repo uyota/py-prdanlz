@@ -1,0 +1,24 @@
+{
+    "variables": {
+        "acline": {"sysctl": "hw.acpi.acline"},
+        "battery_life": {"sysctl": "hw.acpi.battery.life"}
+    },
+    "incidents": {
+        "battery_monitor": {
+            "description": "Low battery warnings and action",
+            "error": {
+                "percent": 10,
+                "trigger": "{acline} == 0 and {battery_life} <= {percent}",
+                "untrigger": "{acline} == 1 or {battery_life} > 1.5 * {percent}",
+                "escalation": "shutdown -p now"
+            },
+            "warn": {
+                "percent": 25,
+                "escalation": "logger 'Battery is less than {percent}%'"
+            },
+            "info": {
+                "percent": 50
+            }
+        }
+    }
+}
