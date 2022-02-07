@@ -36,9 +36,7 @@ class Incident:
     levels = ["error", "warn", "info"]
 
     class Level:
-        def __init__(
-            self, level: str, params: Dict, fallback: Dict = {},
-        ):
+        def __init__(self, level: str, params: Dict, fallback: Dict = {}):
             assert level
             self._level = level
             self._vars: Dict = _clone_with_primitives(params)

@@ -116,18 +116,12 @@ def analyze(args):
     for file in args.config:
         with file as json_file:
             setting = json.load(json_file)
-            if "constants" in setting:
-                logger.debug(f"Loading constants from '{file.name}'")
-                m.add_constants(setting["constants"])
-            if "variables" in setting:
-                logger.debug(f"Loading variables from '{file.name}'")
-                m.add_variables(setting["variables"])
-            if "derivatives" in setting:
-                logger.debug(f"Loading derivatives from '{file.name}'")
-                m.add_derivatives(setting["derivatives"])
-            if "incidents" in setting:
-                logger.debug(f"Loading incidents from '{file.name}'")
-                m.add_incidents(setting["incidents"])
+            counts = m.load_json(setting)
+            logger.info(f"Loaded from '{file.name}'")
+            logger.info(f"Loaded {counts[0]} constants")
+            logger.info(f"Loaded {counts[1]} variables")
+            logger.info(f"Loaded {counts[2]} derivatives")
+            logger.info(f"Loaded {counts[3]} incidents")
     m.start()
 
 

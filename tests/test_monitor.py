@@ -1,4 +1,4 @@
-# Copyright (c) 2021 Yoshihiro Ota <ota@j.email.ne.jp>
+# Copyright (c) 2021, 2022 Yoshihiro Ota <ota@j.email.ne.jp>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -28,9 +28,44 @@ from prdanlz import Monitor
 
 VARIABLE = {"ncpu": {"sysctl": "hw.ncpu"}}
 VARIABLES = {"ncpu": {"sysctl": "hw.ncpu"}, "ostype": {"sysctl": "kern.ostype"}}
+DERIVATIVE = {"expr": "1 + 1"}
+DERIVATIVES = {"expr": "1 + 1", "eval": "2 * 3 + 1 "}
+CHECK_INCIDENT = {
+    "description": "number",
+    "info": {"trigger": "", "untrigger": "", "escalation": ""},
+}
+INCIDENT = {"check": CHECK_INCIDENT}
+INCIDENTS = {"check1": CHECK_INCIDENT, "check2": CHECK_INCIDENT}
 
 
-def test_monitor_add_1_variable():
+def test_monitor():
+    # GIVEN & WHEN
+    m = Monitor()
+
+    # THEN
+    assert m
+
+
+def test_monitor__with_interval():
+    # GIVEN & WHEN
+    m = Monitor(3)
+
+    # THEN
+    assert m
+
+
+def test_monitor__exit():
+    # GIVEN
+    m = Monitor(3)
+
+    # GIVEN & WHEN
+    m.exit()
+
+    # THEN
+    assert m
+
+
+def test_monitor__add_1_variable():
     # GIVEN
     m = Monitor()
 
@@ -41,7 +76,7 @@ def test_monitor_add_1_variable():
     assert count == 1
 
 
-def test_monitor_add_2_variables():
+def test_monitor__add_2_variables():
     # GIVEN
     m = Monitor()
 
@@ -52,7 +87,7 @@ def test_monitor_add_2_variables():
     assert count == 2
 
 
-def test_monitor_add_same_variables():
+def test_monitor__add_same_variables():
     # GIVEN
     m = Monitor()
     count = m.add_variables(VARIABLES)
@@ -63,3 +98,151 @@ def test_monitor_add_same_variables():
 
         # THEN
         assert e
+
+
+def test_monitor__add_1_constant():
+    # GIVEN
+    m = Monitor()
+
+    # WHEN
+    count = m.add_constants(VARIABLE)
+
+    # THEN
+    assert count == 1
+
+
+def test_monitor__add_2_constants():
+    # GIVEN
+    m = Monitor()
+
+    # WHEN
+    count = m.add_constants(VARIABLES)
+
+    # THEN
+    assert count == 2
+
+
+def test_monitor__add_same_constants():
+    # GIVEN
+    m = Monitor()
+    count = m.add_constants(VARIABLES)
+
+    # WHEN
+    with pytest.raises(Exception) as e:
+        count = m.add_constants(DERIVATIVES)
+
+        # THEN
+        assert e
+
+
+def test_monitor__add_1_derivative():
+    # GIVEN
+    m = Monitor()
+
+    # WHEN
+    count = m.add_derivatives(DERIVATIVE)
+
+    # THEN
+    assert count == 1
+
+
+def test_monitor__add_2_derivatives():
+    # GIVEN
+    m = Monitor()
+
+    # WHEN
+    count = m.add_derivatives(DERIVATIVES)
+
+    # THEN
+    assert count == 2
+
+
+def test_monitor__add_same_derivatives():
+    # GIVEN
+    m = Monitor()
+    count = m.add_derivatives(DERIVATIVES)
+
+    # WHEN
+    with pytest.raises(Exception) as e:
+        count = m.add_derivatives(DERIVATIVES)
+
+        # THEN
+        assert e
+
+
+def test_monitor__load_empty_json():
+    # GIVEN
+    m = Monitor()
+
+    # WHEN
+    counts = m.load_json({})
+
+    # THEN
+    for i in range(4):
+        assert counts[i] == 0
+
+
+def test_monitor__add_1_incident():
+    # GIVEN
+    m = Monitor()
+
+    # WHEN
+    count = m.add_incidents(INCIDENT)
+
+    # THEN
+    assert count == 1
+
+
+def test_monitor__add_2_incidents():
+    # GIVEN
+    m = Monitor()
+
+    # WHEN
+    count = m.add_incidents(INCIDENTS)
+
+    # THEN
+    assert count == 2
+
+
+def test_monitor__add_same_incidents():
+    # GIVEN
+    m = Monitor()
+    count = m.add_incidents(INCIDENTS)
+
+    # WHEN
+    with pytest.raises(Exception) as e:
+        count = m.add_incidents(INCIDENTS)
+
+        # THEN
+        assert e
+
+
+def test_monitor__load_empty_json():
+    # GIVEN
+    m = Monitor()
+
+    # WHEN
+    counts = m.load_json({})
+
+    # THEN
+    for i in range(4):
+        assert counts[i] == 0
+
+
+def test_monitor__load_some_json():
+    # GIVEN
+    m = Monitor()
+
+    # WHEN
+    counts = m.load_json(
+        {
+            "constants": VARIABLE,
+            "variables": {"kmem": {"sysctl": "vm.kmem_size"}},
+            "derivatives": DERIVATIVE,
+            "incidents": INCIDENT,
+        }
+    )
+
+    # THEN
+    for i in range(4):
+        assert counts[i] == 1

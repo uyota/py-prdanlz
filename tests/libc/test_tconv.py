@@ -132,6 +132,8 @@ def test_tconv_cstring__off_offset():
 
     # THEN
     assert v == ""
+
+
 import pytest
 
 import copy

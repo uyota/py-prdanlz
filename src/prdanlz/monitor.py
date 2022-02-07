@@ -25,7 +25,7 @@ import copy
 import logging
 import signal
 import threading
-from typing import Dict, Optional, Set
+from typing import Dict, Optional, Set, Tuple
 
 from . import Incident, instantiate_variable, Variable
 
@@ -49,7 +49,27 @@ class Monitor:
 
     def exit(self, *args):
         logger.info(f"Exiting")
-        self._running.set()
+        if self._running is not None:
+            self._running.set()
+
+    def load_json(self, json: Dict) -> Tuple[int, int, int, int]:
+        constants = 0
+        variables = 0
+        derivatives = 0
+        incidents = 0
+        if "constants" in json:
+            logger.debug(f"Loading constants")
+            constants = self.add_constants(json["constants"])
+        if "variables" in json:
+            logger.debug(f"Loading variables")
+            variables = self.add_variables(json["variables"])
+        if "derivatives" in json:
+            logger.debug(f"Loading derivatives")
+            derivatives = self.add_derivatives(json["derivatives"])
+        if "incidents" in json:
+            logger.debug(f"Loading incidents")
+            incidents = self.add_incidents(json["incidents"])
+        return (constants, variables, derivatives, incidents)
 
     def add_constants(self, json: Dict) -> int:
         return self._parse_variables(json, self._constants)
@@ -68,8 +88,6 @@ class Monitor:
             logger.info(f"Derivative '{key}' is configured")
             count += 1
         return count
-
-        return self._parse_variables(json, self._variables)
 
     def add_incidents(self, json: Dict) -> int:
         count = 0
