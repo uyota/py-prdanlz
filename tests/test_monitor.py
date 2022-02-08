@@ -23,6 +23,8 @@
 
 import pytest
 import copy
+import threading
+import time
 
 from prdanlz import Monitor
 
@@ -31,11 +33,23 @@ VARIABLES = {"ncpu": {"sysctl": "hw.ncpu"}, "ostype": {"sysctl": "kern.ostype"}}
 DERIVATIVE = {"expr": "1 + 1"}
 DERIVATIVES = {"expr": "1 + 1", "eval": "2 * 3 + 1 "}
 CHECK_INCIDENT = {
-    "description": "number",
-    "info": {"trigger": "", "untrigger": "", "escalation": ""},
+    "description": "number of CPUs",
+    "info": {
+        "trigger": "{ncpu} <= 4",
+        "untrigger": "{ncpu} > 5",
+        "escalation": "echo '{description} is {ncpu}'",
+    },
 }
 INCIDENT = {"check": CHECK_INCIDENT}
 INCIDENTS = {"check1": CHECK_INCIDENT, "check2": CHECK_INCIDENT}
+
+
+JSON_ALL = {
+    "constants": VARIABLE,
+    "variables": {"kmem": {"sysctl": "vm.kmem_size"}},
+    "derivatives": DERIVATIVE,
+    "incidents": INCIDENT,
+}
 
 
 def test_monitor():
@@ -234,15 +248,28 @@ def test_monitor__load_some_json():
     m = Monitor()
 
     # WHEN
-    counts = m.load_json(
-        {
-            "constants": VARIABLE,
-            "variables": {"kmem": {"sysctl": "vm.kmem_size"}},
-            "derivatives": DERIVATIVE,
-            "incidents": INCIDENT,
-        }
-    )
+    counts = m.load_json(JSON_ALL)
 
     # THEN
     for i in range(4):
         assert counts[i] == 1
+
+
+def exit_monitor(m: Monitor, wait: float) -> None:
+    time.sleep(wait)
+    m.exit()
+
+
+def test_monitor__interval():
+    # GIVEN
+    m = Monitor(0.1)
+    m.load_json(JSON_ALL)
+
+    thread = threading.Thread(target=exit_monitor, args=(m, 0.3))
+    thread.start()
+
+    # WHEN
+    m.start()
+
+    # THEN
+    thread.join()
