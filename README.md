@@ -171,6 +171,11 @@ Prdanlz uses 'py-sysctl' library and doesn't invoke external 'sysctl' command.
 "hw__ncpu": {"sysctl": "hw.ncpu"}
 ```
 
+#### [Supported Structure Sysctl Types](./SysctlTypes.md)
+
+Refer to [Sysctl Types](./SysctlTypes.md) for each of struct sysctl format
+and its output.
+
 ### Order of Evaluations among Variables
 
 1. All "constants" are fetched at start time and only once, first.
