@@ -2,11 +2,11 @@
 
 The output examples of supported struct based sysctl are displayed as below.
 
-1. [clockinfo type](./SysctlTypes.md#clockinfo-type)
-1. [loadavg type](./SysctlTypes.md#loadavg-type)
-1. [pagesizes type](./SysctlTypes.md#pagesizes-type)
-1. [timeval type](./SysctlTypes.md#timeval-type)
-1. [vmtotal type](./SysctlTypes.md#vmtotal-type)
+1. [clockinfo type](./SysctlTypes.md#clockinfo)
+1. [loadavg type](./SysctlTypes.md#loadavg)
+1. [pagesizes type](./SysctlTypes.md#pagesizes)
+1. [timeval type](./SysctlTypes.md#timeval)
+1. [vmtotal type](./SysctlTypes.md#vmtotal)
 
 ## clockinfo
 
