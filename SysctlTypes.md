@@ -2,11 +2,71 @@
 
 The output examples of supported struct based sysctl are displayed as below.
 
+1. [bios_smap_xattr type](./SysctlTypes.md#bios_smap_xattr)
 1. [clockinfo type](./SysctlTypes.md#clockinfo)
 1. [loadavg type](./SysctlTypes.md#loadavg)
 1. [pagesizes type](./SysctlTypes.md#pagesizes)
 1. [timeval type](./SysctlTypes.md#timeval)
 1. [vmtotal type](./SysctlTypes.md#vmtotal)
+
+## bios_smap_xattr
+
+Sysctl machdep.smap is only available on i386 and amd64 only.
+The return type is a list of dicts.
+
+### sysctl bios_smap_xattr
+```
+sysctl machdep.smap
+machdep.smap:
+SMAP type=01, xattr=01, base=0000000000000000, len=000000000009d800
+SMAP type=02, xattr=01, base=000000000009d800, len=0000000000002800
+SMAP type=02, xattr=01, base=00000000000e0000, len=0000000000020000
+SMAP type=01, xattr=01, base=0000000000100000, len=00000000bf3d6000
+SMAP type=04, xattr=01, base=00000000bf4d6000, len=0000000000048000
+SMAP type=03, xattr=01, base=00000000bf51e000, len=000000000000b000
+SMAP type=04, xattr=01, base=00000000bf529000, len=0000000000001000
+SMAP type=02, xattr=01, base=00000000bf52a000, len=0000000000024000
+SMAP type=01, xattr=01, base=00000000bf54e000, len=0000000000002000
+SMAP type=04, xattr=01, base=00000000bf550000, len=0000000000021000
+SMAP type=02, xattr=01, base=00000000bf571000, len=0000000000023000
+SMAP type=04, xattr=01, base=00000000bf594000, len=000000000000b000
+SMAP type=02, xattr=01, base=00000000bf59f000, len=0000000000002000
+SMAP type=04, xattr=01, base=00000000bf5a1000, len=0000000000011000
+SMAP type=02, xattr=01, base=00000000bf5b2000, len=000000000002b000
+SMAP type=04, xattr=01, base=00000000bf5dd000, len=0000000000043000
+SMAP type=01, xattr=01, base=00000000bf620000, len=00000000001e0000
+SMAP type=01, xattr=01, base=0000000100000000, len=000000023e000000
+SMAP type=02, xattr=01, base=00000000fed1c000, len=0000000000024000
+SMAP type=02, xattr=01, base=00000000ff000000, len=0000000001000000
+```
+### prdanlz bios_smap_xattr
+```
+>>> from prdanlz.libc.sysctl import Sysctl
+>>> s = Sysctl("machdep.smap")
+>>> s.value
+[
+    {"base": 0, "length": 645120, "type": 1, "xattr": 1},
+    {"base": 645120, "length": 10240, "type": 2, "xattr": 1},
+    {"base": 917504, "length": 131072, "type": 2, "xattr": 1},
+    {"base": 1048576, "length": 3208470528, "type": 1, "xattr": 1},
+    {"base": 3209519104, "length": 294912, "type": 4, "xattr": 1},
+    {"base": 3209814016, "length": 45056, "type": 3, "xattr": 1},
+    {"base": 3209859072, "length": 4096, "type": 4, "xattr": 1},
+    {"base": 3209863168, "length": 147456, "type": 2, "xattr": 1},
+    {"base": 3210010624, "length": 8192, "type": 1, "xattr": 1},
+    {"base": 3210018816, "length": 135168, "type": 4, "xattr": 1},
+    {"base": 3210153984, "length": 143360, "type": 2, "xattr": 1},
+    {"base": 3210297344, "length": 45056, "type": 4, "xattr": 1},
+    {"base": 3210342400, "length": 8192, "type": 2, "xattr": 1},
+    {"base": 3210350592, "length": 69632, "type": 4, "xattr": 1},
+    {"base": 3210420224, "length": 176128, "type": 2, "xattr": 1},
+    {"base": 3210596352, "length": 274432, "type": 4, "xattr": 1},
+    {"base": 3210870784, "length": 1966080, "type": 1, "xattr": 1},
+    {"base": 4294967296, "length": 9630121984, "type": 1, "xattr": 1},
+    {"base": 4275159040, "length": 147456, "type": 2, "xattr": 1},
+    {"base": 4278190080, "length": 16777216, "type": 2, "xattr": 1},
+]
+```
 
 ## clockinfo
 

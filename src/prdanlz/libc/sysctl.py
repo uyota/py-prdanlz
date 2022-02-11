@@ -167,13 +167,12 @@ def oidvalue(oid: typing.List[int], buflen: int) -> bytes:
     p_buf = ctypes.POINTER(buf_type)(buf)
     p_buf_void = ctypes.cast(p_buf, ctypes.c_void_p)
 
-    buf_length = ctypes.sizeof(buf)
-    p_buf_length = ctypes.POINTER(ctypes.c_int)(ctypes.c_int(buf_length))
+    len = ctypes.c_long(buflen)
 
-    if not pysysctl(oid, p_buf_void, p_buf_length, None):
+    if not pysysctl(oid, p_buf_void, ctypes.byref(len), None):
         raise RuntimeError(f"Invalid sysctl mib: '{oid}'")
 
-    return buf[:buf_length]  # c_char_Array to bytes
+    return buf[: len.value]  # c_char_Array to bytes
 
 
 """
@@ -223,6 +222,17 @@ INPUT_ID = [
     ("uint16_t", "product"),
     ("uint16_t", "version"),
 ]
+
+# bios_smap_xattr in /usr/include/machine/pc/bios.h
+BIOS_SMAP_XATTR = [
+    ("u_int64_t", "base"),
+    ("u_int64_t", "length"),
+    ("u_int32_t", "type"),
+    ("u_int32_t", "xattr"),
+]
+
+# efi_map_header in /usr/include/x86/metadata.h
+# EFI_MAP_HEADER
 
 
 def optimize(
@@ -292,12 +302,30 @@ class PagesizesConv(tconv.TypeConv):
         return l
 
 
+class SmapConv(tconv.TypeConv):
+    _smapconv = None
+    _sizeof = None
+
+    def __init__(self) -> None:
+        if SmapConv._smapconv is None:
+            SmapConv._smapconv = DictConv(optimize(BIOS_SMAP_XATTR))
+            SmapConv._sizeof = SmapConv._smapconv.sizeof
+
+    def c2p(self, data: bytes, offset: int = 0) -> typing.Any:
+        smap = []
+        while offset < len(data):
+            smap.append(SmapConv._smapconv.c2p(data, offset))
+            offset += SmapConv._sizeof
+        return smap
+
+
 clockinfo = DictConv(optimize(CLOCKINFO))
 loadavg = LoadavgConv()
 timeval = TimevalConv()
 vmtotal = DictConv(optimize(VMTOTAL))
 pagesizes = PagesizesConv()
 input_id = DictConv(optimize(INPUT_ID))
+bios_smap_xattr = SmapConv()
 
 FMT2TCONV = {
     "S,clockinfo": clockinfo,
@@ -307,7 +335,7 @@ FMT2TCONV = {
     "S,input_id": input_id,
     "S,pagesizes": pagesizes,
     "S,efi_map_header": tconv.byte,
-    "S,bios_smap_xattr": tconv.byte,
+    "S,bios_smap_xattr": bios_smap_xattr,
 }
 
 
@@ -389,8 +417,8 @@ XSWDEV = [
 
 class SwapinfoConv(tconv.TypeConv):
     _swconv = None
-    _pagesize = None
     _sizeof = None
+    _pagesize = None
 
     def __init__(self, node: Sysctl) -> None:
         self._name = node._name

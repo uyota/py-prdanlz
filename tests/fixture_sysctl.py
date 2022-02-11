@@ -59,7 +59,7 @@ OPAQUES = [
         ("vm.vmtotal", "S,vmtotal", 12),
         # ("", "S,input_id",14),
         ("hw.pagesizes", "S,pagesizes", 13)
-        # ("", "S,efi_map_header",12), # amd64 only
+        # ("machdep.efi_map", "S,efi_map_header",12), # amd64 only
         # ("machdep.smap", "S,bios_smap_xattr",12), # amd64/i386 only
     ]
     if i[-1] < OS_VERSION

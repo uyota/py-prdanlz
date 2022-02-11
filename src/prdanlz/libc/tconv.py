@@ -93,8 +93,10 @@ TYPE2CONV = {
     "uint16_t": uint16,
     "int32_t": int32,
     "uint32_t": uint32,
+    "u_int32_t": uint32,
     "int64_t": int64,
     "uint64_t": uint64,
+    "u_int64_t": uint64,
     "size_t": ulong,  # based on /usr/include/x86/_types.h
     "time_t": int,  # 8 bytes on all supported architectures except i386 per man arch
     "suseconds_t": long,
