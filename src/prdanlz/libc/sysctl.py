@@ -191,6 +191,7 @@ LOADAVG = [
     ("uint32_t", "1min"),
     ("uint32_t", "3min"),
     ("uint32_t", "15min"),
+    ("uint32_t", ""),
     ("long", "scale"),
 ]
 
