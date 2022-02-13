@@ -246,6 +246,37 @@ def test_DictConv__no_mapping():
     assert value == fixture_sysctl.BYTE
 
 
+@pytest.mark.parametrize(
+    "input,expected_fmt,expected_names",
+    [
+        ([("int", "1")], "i", ["1"]),
+        ([("int", "1"), ("int", "2")], "ii", ["1", "2"]),
+        ([("int", "1"), ("int", "2"), ("long", "3")], "iil", ["1", "2", "3"]),
+    ],
+)
+def test_StructConv__optimize(input, expected_fmt, expected_names):
+    # GIVEN & WHEN
+    (fmt, names) = sysctl.StructConv.optimize(input)
+
+    # THEN
+    assert type(fmt) == str
+    assert fmt == expected_fmt
+    assert type(names) == list
+    assert names == expected_names
+
+
+def test_StructConv__optimize_throws():
+    # GIVEN
+    input = [("int", "1"), ("int", None)]
+
+    # WHEN
+    with pytest.raises(RuntimeError) as e:
+        sysctl.StructConv.optimize(input)
+
+    # THEN
+    assert "None" in str(e)
+
+
 def test_Sysctl__fmt__clockrate():
     # GIVEN
     s = sysctl.Sysctl("kern.clockrate")

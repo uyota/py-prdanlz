@@ -191,7 +191,6 @@ LOADAVG = [
     ("uint32_t", "1min"),
     ("uint32_t", "3min"),
     ("uint32_t", "15min"),
-    ("uint32_t", ""),
     ("long", "scale"),
 ]
 
@@ -243,6 +242,14 @@ def optimize(
 
 
 class DictConv(tconv.TypeConv):
+    """
+    DictConv convers each field with primitive 'struct' converters.
+    This cannot handle architecture dependent padding well.
+    Empty field name indicates it is an explicit padding - the field
+    exists likely for backward compatibility or future reserved space
+    but does not carry meaningful value.
+    """
+
     _sizeof = None
 
     def __init__(self, mapping: typing.List[typing.Tuple[tconv.TypeConv, str]]) -> None:
@@ -270,8 +277,41 @@ class DictConv(tconv.TypeConv):
         return DictConv._sizeof
 
 
-class LoadavgConv(DictConv):
-    _mapping = optimize(LOADAVG)
+class StructConv(tconv.TypeConv):
+    """
+    StructConv convers fields with a single 'struct' converters.
+    This can handle implicit architecture dependent padding.
+    However, this cannot skip explict padding fileds.
+    """
+
+    _sizeof = None
+
+    def __init__(self, mapping: typing.Tuple[str, typing.List[str]]) -> None:
+        self._decoder = struct.Struct(mapping[0])
+        self._names = mapping[1]
+
+    def c2p(self, data: bytes, offset: int = 0) -> typing.Any:
+        values = self._decoder.unpack_from(data, offset)
+        return dict(zip(self._names, values))
+
+    @property
+    def sizeof(self) -> int:
+        return self._decoder.size
+
+    @staticmethod
+    def optimize(
+        mapping: typing.List[typing.Tuple[str, str]]
+    ) -> typing.Tuple[str, typing.List[str]]:
+        for i in mapping:
+            if i[1] is None:
+                raise RuntimeError(f"StructType do not support None field")
+        formats = [tconv.TYPE2CONV[i[0]].format for i in mapping]
+        names = [i[1] for i in mapping]
+        return ("".join(formats), names)
+
+
+class LoadavgConv(StructConv):
+    _mapping = StructConv.optimize(LOADAVG)
 
     def __init__(self) -> None:
         super().__init__(LoadavgConv._mapping)

@@ -52,6 +52,10 @@ class NativeConv(TypeConv):
     def size(self) -> int:
         return self._decoder.size
 
+    @property
+    def format(self) -> str:
+        return self._decoder.format
+
 
 class CstringConv(TypeConv):
     def c2p(self, data: bytes, offset: int = 0) -> typing.Any:
