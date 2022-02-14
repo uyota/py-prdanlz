@@ -31,3 +31,4 @@ def syscall(args: typing.List[str]) -> str:
 
 OS_VERSION = syscall(["/sbin/sysctl", "-n", "kern.osrelease"])
 OS_VERSION = float(OS_VERSION[: OS_VERSION.find("-")])
+MACHINE = syscall(["/usr/bin/uname", "-p"])

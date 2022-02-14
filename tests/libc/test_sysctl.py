@@ -27,6 +27,7 @@ import copy
 import platform
 
 import prdanlz.libc.sysctl as sysctl
+import prdanlz.libc.tconv as tconv
 
 from .. import fixture_sysctl, syscall
 
@@ -235,6 +236,27 @@ def test_Sysctl__value(field):
         assert str(value) == stdout
 
 
+@pytest.mark.parametrize(
+    "input,expected",
+    [
+        ([("int", "1")], [(tconv.int, "1")]),
+        ([("int", "1"), ("int", "2")], [(tconv.int, "1"), (tconv.int, "2")]),
+        (
+            [("int", "1"), ("int", "2"), ("long", "3")],
+            [(tconv.int, "1"), (tconv.int, "2"), (tconv.long, "3")],
+        ),
+        ([("int", ""), ("int", "2")], [(tconv.int, ""), (tconv.int, "2")]),
+        ([("int", None), ("int", "2")], [(tconv.int, None), (tconv.int, "2")]),
+    ],
+)
+def test_DictConv__optimize(input, expected):
+    # GIVEN & WHEN
+    result = sysctl.DictConv.optimize(input)
+
+    # THEN
+    assert result == expected
+
+
 def test_DictConv__no_mapping():
     # GIVEN
     d = sysctl.DictConv(None)
@@ -244,6 +266,26 @@ def test_DictConv__no_mapping():
 
     # THEN
     assert value == fixture_sysctl.BYTE
+
+
+@pytest.mark.parametrize(
+    "input,expected",
+    [
+        ([("int", "1")], {"1": 1985229328}),
+        ([("int", "1"), ("int", "2")], {"1": 1985229328, "2": -19088744}),
+        ([("int", ""), ("int", "2")], {"2": -19088744}),
+        ([("int", None), ("int", "2")], {"2": -19088744}),
+    ],
+)
+def test_DictConv__c2p(input, expected):
+    # GIVEN
+    d = sysctl.DictConv(sysctl.DictConv.optimize(input))
+
+    # WHEN
+    value = d.c2p(fixture_sysctl.BYTE)
+
+    # THEN
+    assert value == expected
 
 
 @pytest.mark.parametrize(
@@ -275,6 +317,24 @@ def test_StructConv__optimize_throws():
 
     # THEN
     assert "None" in str(e)
+
+
+@pytest.mark.parametrize(
+    "input,expected",
+    [
+        ([("int", "1")], {"1": 1985229328}),
+        ([("int", "1"), ("int", "2")], {"1": 1985229328, "2": -19088744}),
+    ],
+)
+def test_StructConv__c2p(input, expected):
+    # GIVEN
+    d = sysctl.StructConv(sysctl.StructConv.optimize(input))
+
+    # WHEN
+    value = d.c2p(fixture_sysctl.BYTE)
+
+    # THEN
+    assert value == expected
 
 
 def test_Sysctl__fmt__clockrate():

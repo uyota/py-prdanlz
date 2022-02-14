@@ -21,7 +21,7 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
 
-from . import OS_VERSION
+from . import MACHINE, OS_VERSION
 
 BYTE = b"\x102Tv\x98\xba\xdc\xfe"  # 0xFEDCBA9876543210 in little endian
 
@@ -53,14 +53,14 @@ TYPES = [
 OPAQUES = [
     (i[0], i[1])
     for i in [
-        ("kern.clockrate", "S,clockinfo", 12),
-        ("vm.loadavg", "S,loadavg", 12),
-        ("kern.boottime", "S,timeval", 12),
-        ("vm.vmtotal", "S,vmtotal", 12),
-        # ("", "S,input_id",14),
-        ("hw.pagesizes", "S,pagesizes", 13)
-        # ("machdep.efi_map", "S,efi_map_header",12), # amd64 only
-        # ("machdep.smap", "S,bios_smap_xattr",12), # amd64/i386 only
+        ("kern.clockrate", "S,clockinfo", 12, None),
+        ("vm.loadavg", "S,loadavg", 12, None),
+        ("kern.boottime", "S,timeval", 12, None),
+        ("vm.vmtotal", "S,vmtotal", 12, None),
+        # ("", "S,input_id",14, None),
+        ("hw.pagesizes", "S,pagesizes", 13, None),
+        # ("machdep.efi_map", "S,efi_map_header", 12, ["amd64"]),
+        ("machdep.smap", "S,bios_smap_xattr", 12, ["amd64", "i386"]),
     ]
-    if i[-1] < OS_VERSION
+    if i[-2] < OS_VERSION and (i[-1] == None or MACHINE in i[-1])
 ]

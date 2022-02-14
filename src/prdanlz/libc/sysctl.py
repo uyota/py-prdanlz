@@ -235,12 +235,6 @@ BIOS_SMAP_XATTR = [
 # EFI_MAP_HEADER
 
 
-def optimize(
-    mapping: typing.List[typing.Tuple[str, str]]
-) -> typing.List[typing.Tuple[tconv.TypeConv, str]]:
-    return [(tconv.TYPE2CONV[i[0]], i[1]) for i in mapping]
-
-
 class DictConv(tconv.TypeConv):
     """
     DictConv convers each field with primitive 'struct' converters.
@@ -261,7 +255,7 @@ class DictConv(tconv.TypeConv):
         value = {}
         start = offset
         for (conv, name) in self._mapping:
-            if name != "":
+            if name:  # Niether None nor ""
                 value[name] = conv.c2p(data, start)
             start += conv.size
         return value
@@ -275,6 +269,12 @@ class DictConv(tconv.TypeConv):
             fmts = [nconv._decoder.format for (nconv, name) in self._mapping]
             DictConv._sizeof = struct.Struct("".join(fmts)).size
         return DictConv._sizeof
+
+    @staticmethod
+    def optimize(
+        mapping: typing.List[typing.Tuple[str, str]]
+    ) -> typing.List[typing.Tuple[tconv.TypeConv, str]]:
+        return [(tconv.TYPE2CONV[i[0]], i[1]) for i in mapping]
 
 
 class StructConv(tconv.TypeConv):
@@ -322,8 +322,8 @@ class LoadavgConv(StructConv):
         return (map["1min"] / scale, map["3min"] / scale, map["15min"] / scale)
 
 
-class TimevalConv(DictConv):
-    _mapping = optimize(TIMEVAL)
+class TimevalConv(StructConv):
+    _mapping = StructConv.optimize(TIMEVAL)
 
     def __init__(self) -> None:
         super().__init__(TimevalConv._mapping)
@@ -349,7 +349,7 @@ class SmapConv(tconv.TypeConv):
 
     def __init__(self) -> None:
         if SmapConv._smapconv is None:
-            SmapConv._smapconv = DictConv(optimize(BIOS_SMAP_XATTR))
+            SmapConv._smapconv = StructConv(StructConv.optimize(BIOS_SMAP_XATTR))
             SmapConv._sizeof = SmapConv._smapconv.sizeof
 
     def c2p(self, data: bytes, offset: int = 0) -> typing.Any:
@@ -360,12 +360,12 @@ class SmapConv(tconv.TypeConv):
         return smap
 
 
-clockinfo = DictConv(optimize(CLOCKINFO))
+clockinfo = DictConv(DictConv.optimize(CLOCKINFO))
 loadavg = LoadavgConv()
 timeval = TimevalConv()
-vmtotal = DictConv(optimize(VMTOTAL))
+vmtotal = StructConv(StructConv.optimize(VMTOTAL))
 pagesizes = PagesizesConv()
-input_id = DictConv(optimize(INPUT_ID))
+input_id = StructConv(StructConv.optimize(INPUT_ID))
 bios_smap_xattr = SmapConv()
 
 FMT2TCONV = {
@@ -465,7 +465,7 @@ class SwapinfoConv(tconv.TypeConv):
         self._name = node._name
         self._mib = node._mib
         if SwapinfoConv._sizeof is None:
-            SwapinfoConv._swconv = DictConv(optimize(XSWDEV))
+            SwapinfoConv._swconv = StructConv(StructConv.optimize(XSWDEV))
             SwapinfoConv._sizeof = SwapinfoConv._swconv.sizeof
             SwapinfoConv._pagesize = libc.getpagesize()
 
