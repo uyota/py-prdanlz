@@ -1,9 +1,9 @@
 {
     "constants": {
-        "hw__ncpu": {"sysctl": "hw.ncpu"}
+        "hw__ncpu": {"type": "sysctl", "sysctl": "hw.ncpu"}
     },
     "variables": {
-        "vm__loadavg": {"sysctl": "vm.loadavg"}
+        "vm__loadavg": {"type": "sysctl", "sysctl": "vm.loadavg"}
     },
     "incidents": {
         "loadavg": {

@@ -1,7 +1,7 @@
 {
     "variables": {
-        "acline": {"sysctl": "hw.acpi.acline"},
-        "battery_life": {"sysctl": "hw.acpi.battery.life"}
+        "acline": {"type": "sysctl", "sysctl": "hw.acpi.acline"},
+        "battery_life": {"type": "sysctl", "sysctl": "hw.acpi.battery.life"}
     },
     "incidents": {
         "battery_monitor": {

@@ -170,7 +170,7 @@ There are 2 data types supported: "syscmd" and "sysctl"
 For example,
 ```
 "variables": {
-    "time": {"syscmd": "date '+%H:%M:%S'"}
+    "time": {"type": "syscmd", "syscmd": "date '+%H:%M:%S'"}
 }
 ```
 creates "time" with "19:28:37" and "last_time" with "19:26:37" with 2 minutes
@@ -178,22 +178,23 @@ interval.
 
 ### "Syscmd" type
 
+A dictionay key of "type" with "syscmd" indicates SYStem CoManD.
 A dictionary value of "syscmd" specifies unix command(s) to run.
 A sequence of commands with a pipe may be also specified.
 
 ```
-"time": {"syscmd": "date '+%H:%M:%S'"}
-"var_messages": {"syscmd": "wc -l /var/log/messages | awk '{print $1}'"
+"time": {"type": "syscmd", "syscmd": "date '+%H:%M:%S'"}
+"var_messages": {"type": "syscmd", "syscmd": "wc -l /var/log/messages | awk '{print $1}'"
 ```
 
 ### "Sysctl" type
 
-Sysctl is issued.
-Prdanlz uses 'py-sysctl' library and doesn't invoke external 'sysctl' command.
+A dictionay key of "type" with "sysctl" indicates capturing a sysctl value.
+Prdanlz uses C biniding and does not invoke external 'sysctl' command.
 
 ```
-"vm__kmem_size": {"sysctl": "vm.kmem_size"},
-"hw__ncpu": {"sysctl": "hw.ncpu"}
+"vm__kmem_size": {"type": "sysctl", "sysctl": "vm.kmem_size"},
+"hw__ncpu": {"type": "sysctl", "sysctl": "hw.ncpu"}
 ```
 
 #### [Supported Structure Sysctl Types](./SysctlTypes.md)

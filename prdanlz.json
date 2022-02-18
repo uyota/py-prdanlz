@@ -1,16 +1,25 @@
 {
     "constants": {
-        "vm__kmem_size": {"sysctl": "vm.kmem_size"},
-        "vm__stats__vm__v_v_page_count": {"sysctl": "vm.stats.vm.v_page_count"},
-        "hw__ncpu": {"sysctl": "hw.ncpu"}
+        "vm__kmem_size": {"type": "sysctl", "sysctl": "vm.kmem_size"},
+        "vm__stats__vm__v_v_page_count": {
+            "type": "sysctl",
+            "sysctl": "vm.stats.vm.v_page_count"
+        },
+        "hw__ncpu": {"type": "sysctl", "sysctl": "hw.ncpu"}
     },
     "variables": {
-        "vm__stats__vm__v_free_count": {"sysctl": "vm.stats.vm.v_free_count"},
-        "time": {"syscmd": "date '+%H:%M:%S'"},
-        "vm__vmtotal": {"sysctl": "vm.vmtotal"},
-        "vm__loadavg": {"sysctl": "vm.loadavg"},
-        "var_messages": {"syscmd": "wc -l /var/log/messages | awk '{print $1}'"},
-        "vm__swap_total": {"sysctl": "vm.swap_total"}
+        "vm__stats__vm__v_free_count": {
+            "type": "sysctl",
+            "sysctl": "vm.stats.vm.v_free_count"
+        },
+        "time": {"type": "syscmd", "syscmd": "date '+%H:%M:%S'"},
+        "vm__vmtotal": {"type": "sysctl", "sysctl": "vm.vmtotal"},
+        "vm__loadavg": {"type": "sysctl", "sysctl": "vm.loadavg"},
+        "var_messages": {
+            "type": "syscmd",
+            "syscmd": "wc -l /var/log/messages | awk '{print $1}'"
+        },
+        "vm__swap_total": {"type": "sysctl", "sysctl": "vm.swap_total"}
     },
     "incidents": {
         "sysctl": {

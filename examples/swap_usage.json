@@ -1,6 +1,6 @@
 {
     "variables": {
-        "vm__swap_info": {"sysctl": "vm.swap_info"}
+        "vm__swap_info": {"type": "sysctl", "sysctl": "vm.swap_info"}
     },
     "derivatives": {
         "total_used": "{vm__swap_info[-1]['xsw_used']}",

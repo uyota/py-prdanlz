@@ -113,7 +113,7 @@ def name2oid(name: str) -> typing.List[int]:
     p_res = ctypes.POINTER(res_type)(res)
 
     if not pysysctl(name2oid.opr, p_res, p_length, p_name):
-        raise RuntimeError(f"Invalid sysctl name: '{name}'")
+        raise ValueError(f"Invalid sysctl name: '{name}'")
 
     oid_length = int(length.value / ctypes.sizeof(ctypes.c_int))
     return res[:oid_length]

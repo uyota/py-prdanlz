@@ -146,7 +146,7 @@ def test_sysctlnametomib():
 
 def test_Sysctl__non_existing():
     # GIVEN
-    with pytest.raises(RuntimeError) as e:
+    with pytest.raises(ValueError) as e:
 
         # WHEN
         sysctl.Sysctl("a.b.c")

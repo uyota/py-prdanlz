@@ -39,8 +39,10 @@ class Variable(ABC):
     A user defines a variable with its "name" and a way to fetch its value.
     """
 
-    def __init__(self, name: str, params: Dict):
+    def __init__(self, name: str, typename: str, params: Dict):
         assert name
+        if params.get("type", None) != typename:
+            raise TypeError(f"Not ${typename} type")
         self._name = name
         self._value = None
         self._last_value = None
@@ -79,7 +81,7 @@ class SyscmdVariable(Variable):
     """
 
     def __init__(self, name: str, params: Dict):
-        super().__init__(name, params)
+        super().__init__(name, "syscmd", params)
 
         self._cmd = params["syscmd"]
         self._last_value = self._value = self._fetch_value()
@@ -94,7 +96,7 @@ class SysctlVariable(Variable):
     """
 
     def __init__(self, name: str, params: Dict):
-        super().__init__(name, params)
+        super().__init__(name, "sysctl", params)
 
         self._sysctl_name = params["sysctl"]
         self._sysctl = sysctl.Sysctl(self._sysctl_name)
@@ -107,9 +109,10 @@ class SysctlVariable(Variable):
 def instantiate_variable(name: str, params: Dict) -> Any:
     assert name
 
-    if "sysctl" in params:
+    type = params.get("type", None)
+    if type == "sysctl":
         return SysctlVariable(name, params)
-    elif "syscmd" in params:
+    elif type == "syscmd":
         return SyscmdVariable(name, params)
     else:
-        raise Exception("Unknown variable type")
+        raise TypeError("Unknown variable type")

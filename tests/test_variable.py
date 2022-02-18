@@ -24,12 +24,24 @@
 import pytest
 import copy
 
-from prdanlz import Variable, SyscmdVariable, SysctlVariable
+from prdanlz import Variable, SyscmdVariable, SysctlVariable, instantiate_variable
+
+
+def test_syscmd__without_type():
+    # GIVEN
+    ls = {"syscmd": "ls -d /tmp"}
+
+    # WHEN
+    with pytest.raises(TypeError) as e:
+        v = SyscmdVariable("ls", ls)
+
+        # THEN
+        assert "Not syscmd type" in str(e)
 
 
 def test_syscmd__ls_tmp():
     # GIVEN
-    ls = {"syscmd": "ls -d /tmp"}
+    ls = {"type": "syscmd", "syscmd": "ls -d /tmp"}
 
     # WHEN
     v = SyscmdVariable("ls", ls)
@@ -40,7 +52,7 @@ def test_syscmd__ls_tmp():
 
 def test_syscmd__ls_dev_x():
     # GIVEN
-    ls = {"syscmd": "ls -d /dev/x"}
+    ls = {"type": "syscmd", "syscmd": "ls -d /dev/x"}
 
     # WHEN
     v = SyscmdVariable("ls", ls)
@@ -51,7 +63,7 @@ def test_syscmd__ls_dev_x():
 
 def test_syscmd__ls_bad_option():
     # GIVEN
-    ls = {"syscmd": "ls -% /tmp"}
+    ls = {"type": "syscmd", "syscmd": "ls -% /tmp"}
 
     # WHEN
     v = SyscmdVariable("ls", ls)
@@ -60,8 +72,43 @@ def test_syscmd__ls_bad_option():
     assert v.value == ""  # stdout is empty
 
 
-SYSCTL_JSON = {"sysctl": "hw.ncpu"}
-SYSCMD_JSON = {"syscmd": "/bin/echo ABC"}
+def test_sysctl__without_type():
+    # GIVEN
+    os = {"sysctl": "kern.ostype"}
+
+    # WHEN
+    with pytest.raises(TypeError) as e:
+        v = SysctlVariable("os", os)
+
+        # THEN
+        assert "Not sysctl type" in str(e)
+
+
+def test_sysctl__kern_ostype():
+    # GIVEN
+    os = {"type": "sysctl", "sysctl": "kern.ostype"}
+
+    # WHEN
+    v = SysctlVariable("os", os)
+
+    # THEN
+    assert v.value == "FreeBSD"
+
+
+def test_sysctl__bad_ostype():
+    # GIVEN
+    os = {"type": "sysctl", "sysctl": "ostype"}
+
+    # WHEN
+    with pytest.raises(ValueError) as e:
+        v = SysctlVariable("os", os)
+
+        # THEN
+        assert "Invalid sysctl name" in str(e)
+
+
+SYSCTL_JSON = {"type": "sysctl", "sysctl": "hw.ncpu"}
+SYSCMD_JSON = {"type": "syscmd", "syscmd": "/bin/echo ABC"}
 
 
 @pytest.mark.parametrize("field", ["sysctl"])
@@ -71,32 +118,44 @@ def test_variable_missing_field(field):
     del variable_dict[field]
 
     # WHEN
-    with pytest.raises(Exception) as e:
+    with pytest.raises(TypeError) as e:
         v = Variable("hw__ncpu", variable_dict)
 
         # THEN
-        assert e
+    assert "test" in str(e)
 
 
 def test_instantiate_variable__sysctl():
     # GIVEN & WHEN
-    with pytest.raises(Exception) as e:
-        v = instantiate_variable("hw__ncpu", SYSCTL_JSON)
+    v = instantiate_variable("hw__ncpu", SYSCTL_JSON)
 
-        # THEN
-        assert e is None
-        assert v.value() != 0
-        assert v.last_value() != 0
-        assert v.new_value() != 0
+    # THEN
+    assert v.value != 0
+    assert v.new_value() != 0
 
 
 def test_instantiate_variable__syscmd():
     # GIVEN & WHEN
-    with pytest.raises(Exception) as e:
-        v = instantiate_variable("echo", SYSCMD_JSON)
+    v = instantiate_variable("echo", SYSCMD_JSON)
 
-        # THEN
-        assert e is None
-        assert v.value() != 0
-        assert v.last_value() != 0
-        assert v.new_value() != 0
+    # THEN
+    assert v.value == "ABC"
+    assert v.new_value() == "ABC"
+
+
+def test_instantiate_variable__syscmd_over_sysctl():
+    # GIVEN & WHEN
+    v = instantiate_variable("which", {**SYSCTL_JSON, **SYSCMD_JSON})
+
+    # THEN
+    assert v.value == "ABC"
+    assert v.new_value() == "ABC"
+
+
+def test_instantiate_variable__sysctl_over_syscmd():
+    # GIVEN & WHEN
+    v = instantiate_variable("which", {**SYSCMD_JSON, **SYSCTL_JSON})
+
+    # THEN
+    assert v.value != "ABC"
+    assert v.new_value() != "ABC"

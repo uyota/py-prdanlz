@@ -28,8 +28,11 @@ import time
 
 from prdanlz import Monitor
 
-VARIABLE = {"ncpu": {"sysctl": "hw.ncpu"}}
-VARIABLES = {"ncpu": {"sysctl": "hw.ncpu"}, "ostype": {"sysctl": "kern.ostype"}}
+VARIABLE = {"ncpu": {"type": "sysctl", "sysctl": "hw.ncpu"}}
+VARIABLES = {
+    "ncpu": {"type": "sysctl", "sysctl": "hw.ncpu"},
+    "ostype": {"type": "sysctl", "sysctl": "kern.ostype"},
+}
 DERIVATIVE = {"expr": "1 + 1"}
 DERIVATIVES = {"expr": "1 + 1", "eval": "2 * 3 + 1 "}
 CHECK_INCIDENT = {
@@ -46,7 +49,7 @@ INCIDENTS = {"check1": CHECK_INCIDENT, "check2": CHECK_INCIDENT}
 
 JSON_ALL = {
     "constants": VARIABLE,
-    "variables": {"kmem": {"sysctl": "vm.kmem_size"}},
+    "variables": {"kmem": {"type": "sysctl", "sysctl": "vm.kmem_size"}},
     "derivatives": DERIVATIVE,
     "incidents": INCIDENT,
 }
