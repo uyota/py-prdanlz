@@ -166,3 +166,32 @@ Free Memory:    8243536K
 {'t_vm': 2091810, 't_avm': 2087529, 't_rm': 746083, 't_arm': 745940, 't_vmshr': 4210, 't_avmshr': 7, 't_rmshr': 130, 't_armshr': 7, 't_free': 1788658, 't_rq': 48, 't_dw': 0, 't_pw': 0, 't_sl': 277, 't_sw': 0}
 >>>
 ```
+
+## swap_info
+
+List of swap devices with device name, bytes used, size of block in bytes,
+and some internal information.
+The last entry is the total.
+
+The sysctl program does not print anything.
+However, `swapctl -l` uses vm.swap_info sysctl behind the scene.
+
+### sysctl swap_info / swapctl
+```
+% sysctl vm.swap_info
+% swapctl -l
+Device:       1024-blocks     Used:
+/dev/ada0s1b    5242880   2268788
+```
+
+### prdanlz swap_info
+```
+>>> from prdanlz.libc.sysctl import Sysctl
+>>> s = Sysctl("vm.swap_info")
+>>> s.value
+[
+    {'xsw_version': 2, 'xsw_dev': 104, 'xsw_flags': 1, 'xsw_nblks': 5368709120, 'xsw_used': 2323210240, 'device': '/dev/ada0s1b'},
+    {'device': 'Total', 'xsw_nblks': 5368709120, 'xsw_used': 2323210240}
+]
+>>>
+```

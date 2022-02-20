@@ -1,10 +1,14 @@
 {
+    "constants": {
+        "vm__swap_maxpages": {"type": "sysctl", "sysctl": "vm.swap_maxpages"},
+	"vm__pagesize": {"type": "sysctl", "sysctl": "hw.pagesize"}
+    },
     "variables": {
         "vm__swap_info": {"type": "sysctl", "sysctl": "vm.swap_info"}
     },
     "derivatives": {
         "total_used": "{vm__swap_info[-1]['xsw_used']}",
-        "total_nblks": "{vm__swap_info[-1]['xsw_nblks']}"
+        "total_nblks": "min({vm__swap_info[-1]['xsw_nblks']}, {vm__swap_maxpages * vm__pagesize})"
     },
     "incidents": {
         "swap_usage": {

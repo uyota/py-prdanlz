@@ -33,6 +33,8 @@ logger = logging.getLogger(__name__)
 
 
 class Monitor:
+    _functions = {"__builtins__": {"abs": abs, "len": len, "max": max, "min": min}}
+
     def __init__(self, interval: float = -1):
         self._interval = interval
         self._constants: Set[Variable] = set()
@@ -132,12 +134,12 @@ class Monitor:
             if last_value is not None:
                 locals["last_" + v] = last_value
                 logger.info(f"'last_{v}' is updated and holds '{last_value}'")
-            expr = eval(f'f"{expr}"', {"__builtins__": {}}, locals)
+            expr = eval(f'f"{expr}"', Monitor._functions, locals)
             logger.debug(f"Resolved derivative={v} to expression='{expr}'")
-            value = eval(expr, {"__builtins__": {}}, locals)
+            value = eval(expr, Monitor._functions, locals)
             locals[v] = value
             logger.info(f"'{v}' is calculated and holds '{value}'")
-        logger.debug("Reloaded all derivatives")
+        logger.debug("Calculated all derivatives")
 
         for incident in self._incidents:
             logger.debug(f"Evaluating '{incident.name}' incident")
