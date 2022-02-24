@@ -52,6 +52,7 @@ Each level defines a range of a value.
         1. ["Level" Definition](./README.md#level-definition)
         1. ["Level" Inheritance](./README.md#level-inheritance)
     1. ["Incident" / "Level" Variables](./README.md#incident--level-variables)
+1. [Verify Input Configuration](./README.md#verify-input-configuration)
 
 # How to Install
 
@@ -178,7 +179,7 @@ interval.
 
 ### "Syscmd" type
 
-A dictionay key of "type" with "syscmd" indicates SYStem CoManD.
+A dictionary key of "type" with "syscmd" indicates SYStem CoManD.
 A dictionary value of "syscmd" specifies unix command(s) to run.
 A sequence of commands with a pipe may be also specified.
 
@@ -189,8 +190,8 @@ A sequence of commands with a pipe may be also specified.
 
 ### "Sysctl" type
 
-A dictionay key of "type" with "sysctl" indicates capturing a sysctl value.
-Prdanlz uses C biniding and does not invoke external 'sysctl' command.
+A dictionary key of "type" with "sysctl" indicates capturing a sysctl value.
+Prdanlz uses C binding and does not invoke external 'sysctl' command.
 
 ```
 "vm__kmem_size": {"type": "sysctl", "sysctl": "vm.kmem_size"},
@@ -329,3 +330,14 @@ Given
 }
 ```
 "error" prints "Help!!!" and "warn" does "Help!" and "info" does "Help" accordingly.
+
+## Verify Input Configuration
+
+Use --verify to check configuration files.
+It loads constants and variables, calcarate derivatives, and
+evaluates triggers, untriggers, and escalation.
+The results are printed.
+
+```
+% python -m prdanlz --verify -c prdanlz.json
+```

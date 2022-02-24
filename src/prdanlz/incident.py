@@ -82,6 +82,15 @@ class Incident:
                     return True
             return False
 
+        def verify(self, locals: Dict) -> None:
+            my_locals = {**locals, **self._vars}
+            expr = eval(f'f"{self._trigger}"', {"__builtins__": {}}, my_locals)
+            logger.debug(f"Resolved '{self._trigger}' to trigger='{expr}'")
+            expr = eval(f'f"{self._untrigger}"', {"__builtins__": {}}, my_locals)
+            logger.debug(f"Resolved '{self._untrigger}' to untrigger='{expr}'")
+            expr = eval(f'f"{self._escalation}"', my_locals)
+            logger.debug(f"Resolved '{self._escalation}' to escalation='{expr}'")
+
     def __init__(self, name: str, params: Dict):
         if "description" in params:
             self._desc = params["description"]
@@ -135,3 +144,8 @@ class Incident:
                     if level.escalate_if_in_range(my_locals):
                         in_range = True
         return in_range
+
+    def verify(self, locals: Dict) -> None:
+        for key, level in self._levels.items():
+            if level:
+                level.verify({**locals, **self._vars})

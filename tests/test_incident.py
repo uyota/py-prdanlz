@@ -98,6 +98,27 @@ def test_incident_level_missing_field_filled_with_default(field):
         assert e
 
 
+@pytest.mark.parametrize(
+    "field,context",
+    [
+        ("trigger", "1 < {value"),
+        ("untrigger", "{value < 0.5"),
+        ("escalation", "echo trigger condition was [trigger}]"),
+    ],
+)
+def test_incident_level__verify_fields(field, context):
+    # GIVEN
+    level_dict = copy.deepcopy(LEVEL_DICT)
+    level_dict[field] = context
+
+    # WHEN
+    l = Incident.Level("test", level_dict)
+
+    # THEN
+    with pytest.raises(SyntaxError) as e:
+        l.verify({"value": 11, "trigger": 22})
+
+
 @pytest.mark.parametrize("field", ["description"])
 def test_incident_missing_field(field):
     # GIVEN
@@ -138,6 +159,19 @@ def test_incident():
 
         # THEN
         assert e is None
+
+
+def test_incident__verify():
+    # GIVEN
+    incident_dict = copy.deepcopy(INCIDENT_DICT1)
+    incident_dict["info"]["escalation"] = "echo trigger condition was [trigger}]"
+
+    # WHEN
+    i = Incident("test", incident_dict)
+
+    # THEN
+    with pytest.raises(SyntaxError) as e:
+        i.verify({"value": 11, "trigger": 22})
 
 
 def test_incident_critial_is_not_a_level_by_default():

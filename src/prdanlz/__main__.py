@@ -89,6 +89,14 @@ def parse_args():
     )
 
     parser.add_argument(
+        "--verify",
+        dest="verify",
+        action="store_true",
+        help="semi-dry run to verify input configuration - fetch and evaluate all but do not execute escalation. SyntaxError indicates error in expressions, NameError indicates wrong variable name",
+    )
+    parser.set_defaults(verify=False)
+
+    parser.add_argument(
         "-d",
         "--debug",
         dest="debug",
@@ -100,8 +108,15 @@ def parse_args():
     return parser.parse_args()
 
 
-def analyze(args):
-    if args.log:
+def analyze(args) -> None:
+    if args.verify:
+        logging.basicConfig(
+            stream=sys.stdout,
+            level=logging.DEBUG,
+            format="%(message)s",
+            datefmt=args.logdateformat,
+        )
+    elif args.log:
         logging.basicConfig(
             filename=args.log,
             level=logging.DEBUG if args.debug else logging.INFO,
@@ -122,7 +137,10 @@ def analyze(args):
             logger.info(f"Loaded {counts[1]} variables")
             logger.info(f"Loaded {counts[2]} derivatives")
             logger.info(f"Loaded {counts[3]} incidents")
-    m.start()
+    if args.verify:
+        m.verify()
+    else:
+        m.start()
 
 
 def main():

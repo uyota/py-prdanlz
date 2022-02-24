@@ -263,6 +263,82 @@ def exit_monitor(m: Monitor, wait: float) -> None:
     m.exit()
 
 
+def test_monitor__fetch_constants():
+    # GIVEN
+    m = Monitor()
+    m.load_json(JSON_ALL)
+
+    # WHEN
+    m.fetch_constants()
+
+    # THEN
+    assert "ncpu" in m._locals
+    assert "kmem" not in m._locals
+    assert "expr" not in m._locals
+
+
+def test_monitor__fetch_variables():
+    # GIVEN
+    m = Monitor()
+    m.load_json(JSON_ALL)
+
+    # WHEN
+    m.fetch_variables(m._locals)
+
+    # THEN
+    assert "ncpu" not in m._locals
+    assert "kmem" in m._locals
+    assert "expr" not in m._locals
+
+
+def test_monitor__evaludate_derivatives():
+    # GIVEN
+    m = Monitor()
+    m.load_json(JSON_ALL)
+
+    # WHEN
+    m.evaludate_derivatives(m._locals)
+
+    # THEN
+    assert "ncpu" not in m._locals
+    assert "kmem" not in m._locals
+    assert "expr" in m._locals
+    assert m._locals["expr"] == 2
+
+
+def test_monitor__verify_syntax_error():
+    # GIVEN - missing closing bracket
+    json = copy.deepcopy(JSON_ALL)
+    json["incidents"]["check"]["info"]["escalation"] = "echo '{description} is {ncpu'"
+    m = Monitor()
+    m.load_json(json)
+
+    # WHEN & THEN
+    with pytest.raises(SyntaxError) as e:
+        m.verify()
+
+
+def test_monitor__verify_name_error():
+    # GIVEN - wrong variable name
+    json = copy.deepcopy(JSON_ALL)
+    json["incidents"]["check"]["info"]["escalation"] = "echo '{description} is {cpus}'"
+    m = Monitor()
+    m.load_json(json)
+
+    # WHEN & THEN
+    with pytest.raises(NameError) as e:
+        m.verify()
+
+
+def test_monitor__verify_successful():
+    # GIVEN
+    m = Monitor()
+    m.load_json(JSON_ALL)
+
+    # WHEN & THEN
+    m.verify()
+
+
 def test_monitor__interval():
     # GIVEN
     m = Monitor(0.1)

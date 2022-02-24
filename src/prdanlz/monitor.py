@@ -103,9 +103,7 @@ class Monitor:
         return count
 
     def start(self) -> None:
-        for v in self._constants:
-            self._locals[v.name] = v.value
-            logger.info(f"Constant '{v.name}' holds {v.value}")
+        self.fetch_constants()
 
         self.fetch_and_evaluate()
         if self._interval > 0:
@@ -120,6 +118,16 @@ class Monitor:
 
     def fetch_and_evaluate(self) -> None:
         locals = copy.deepcopy(self._locals)
+        self.fetch_variables(locals)
+        self.evaludate_derivatives(locals)
+        self.evaluate_incidents(locals)
+
+    def fetch_constants(self) -> None:
+        for v in self._constants:
+            self._locals[v.name] = v.value
+            logger.info(f"Constant '{v.name}' holds {v.value}")
+
+    def fetch_variables(self, locals: Dict) -> None:
         for v in self._variables:
             value = v.new_value()
             last_value = v.last_value
@@ -129,6 +137,7 @@ class Monitor:
             logger.info(f"'last_{v.name}' is updated and holds '{last_value}'")
         logger.debug("Reloaded all variables")
 
+    def evaludate_derivatives(self, locals: Dict) -> None:
         for v, expr in self._derivatives.items():
             last_value = locals.get(v, None)
             if last_value is not None:
@@ -141,6 +150,7 @@ class Monitor:
             logger.info(f"'{v}' is calculated and holds '{value}'")
         logger.debug("Calculated all derivatives")
 
+    def evaluate_incidents(self, locals: Dict) -> None:
         for incident in self._incidents:
             logger.debug(f"Evaluating '{incident.name}' incident")
             incident.escalated(locals)
@@ -157,3 +167,11 @@ class Monitor:
             logger.info(f"Variable '{variable.name}' is configured")
             count += 1
         return count
+
+    def verify(self) -> None:
+        self.fetch_constants()
+        self.fetch_variables(self._locals)
+        self.evaludate_derivatives(self._locals)
+
+        for incident in self._incidents:
+            incident.verify(self._locals)

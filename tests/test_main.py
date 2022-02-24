@@ -43,7 +43,7 @@ def test_parse_args__without_config(sys_exit, capsys):
 
 @patch("prdanlz.monitor.Monitor.fetch_and_evaluate")
 def test_main__without_interval(fetch_and_eval, capsys):
-    # GIVEN & WHEN
+    # GIVEN
     with patch("sys.argv", ["prdanlz", "-c", "prdanlz.json"]):
 
         # WHEN
@@ -53,3 +53,29 @@ def test_main__without_interval(fetch_and_eval, capsys):
     captured = capsys.readouterr()
     assert captured.out == ""
     fetch_and_eval.called_once()
+
+
+@patch("prdanlz.monitor.Monitor.fetch_and_evaluate")
+def test_main__without_interval_with_logging(fetch_and_eval, capsys):
+    # GIVEN
+    with patch("sys.argv", ["prdanlz", "-c", "prdanlz.json", "-l", "/dev/null"]):
+
+        # WHEN
+        main()
+
+    # THEN
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    fetch_and_eval.called_once()
+
+
+def test_main__verify(capsys):
+    # GIVEN
+    with patch("sys.argv", ["prdanlz", "-c", "prdanlz.json", "--verify"]):
+
+        # WHEN
+        main()
+
+    # THEN
+    captured = capsys.readouterr()
+    assert "Resolved" in captured.out
