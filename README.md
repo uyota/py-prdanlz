@@ -101,7 +101,7 @@ $ make fetch makesum install
 
 1. Fetch all of constants at startup
 1. After waiting an interval second, fetch all variables
-1. After all variables are fetched, calcarate all of derivatives
+1. After all variables are fetched, calculate all of derivatives
 1. After all variables are fetched and derivatives are calculated, evaluate all of incidents
 1. If a value moves into a new level of an incident, trigger an action
 1. Wait for another interval period and repeat
@@ -334,7 +334,7 @@ Given
 ## Verify Input Configuration
 
 Use --verify to check configuration files.
-It loads constants and variables, calcarate derivatives, and
+It loads constants and variables, calculate derivatives, and
 evaluates triggers, untriggers, and escalation.
 The results are printed.
 
