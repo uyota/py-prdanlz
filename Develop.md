@@ -13,3 +13,4 @@
 1. py-pytest
 1. py-black / py-pytest-black
 1. py-mock
+1. py-coverage / py-pytest-cov
