@@ -68,6 +68,7 @@ def test_main__without_interval_with_logging(fetch_and_eval, capsys):
     assert captured.out == ""
     fetch_and_eval.called_once()
 
+
 @patch("prdanlz.monitor.Monitor.start")
 def test_main__verify(start):
     # GIVEN

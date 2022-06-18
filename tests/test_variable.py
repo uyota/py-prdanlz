@@ -36,7 +36,7 @@ def test_syscmd__without_type():
         v = SyscmdVariable("ls", ls)
 
         # THEN
-        assert "Not syscmd type" in str(e)
+    assert "Not syscmd type" in str(e)
 
 
 def test_syscmd__ls_tmp():
@@ -81,7 +81,7 @@ def test_sysctl__without_type():
         v = SysctlVariable("os", os)
 
         # THEN
-        assert "Not sysctl type" in str(e)
+    assert "Not sysctl type" in str(e)
 
 
 def test_sysctl__kern_ostype():
@@ -111,18 +111,25 @@ SYSCTL_JSON = {"type": "sysctl", "sysctl": "hw.ncpu"}
 SYSCMD_JSON = {"type": "syscmd", "syscmd": "/bin/echo ABC"}
 
 
-@pytest.mark.parametrize("field", ["sysctl"])
-def test_variable_missing_field(field):
+@pytest.mark.parametrize(
+    "field,expect",
+    [
+        ("type", "Unknown variable type"),
+        ("sysctl", "Incomplete sysctl type specification"),
+    ],
+)
+def test_variable_missing_field(field, expect):
     # GIVEN
     variable_dict = copy.deepcopy(SYSCTL_JSON)
     del variable_dict[field]
 
     # WHEN
     with pytest.raises(TypeError) as e:
-        v = Variable("hw__ncpu", variable_dict)
+        print(variable_dict)
+        v = instantiate_variable("hw__ncpu", variable_dict)
 
         # THEN
-    assert "test" in str(e)
+    assert expect in str(e)
 
 
 def test_instantiate_variable__sysctl():

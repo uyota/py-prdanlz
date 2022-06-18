@@ -42,7 +42,9 @@ class Variable(ABC):
     def __init__(self, name: str, typename: str, params: Dict):
         assert name
         if params.get("type", None) != typename:
-            raise TypeError(f"Not ${typename} type")
+            raise TypeError(f"Not {typename} type")
+        if params.get(typename, None) is None:
+            raise TypeError(f"Incomplete {typename} type specification")
         self._name = name
         self._value = None
         self._last_value = None
