@@ -47,13 +47,32 @@ class Variable(ABC):
             raise TypeError(f"Incomplete {typename} type specification")
         self._name = name
         self._value = None
-        self._last_value = None
+        self._depth = params.get("depth", None) or params.get("history", 0)
+        if self._depth < 0:
+            self._depth = 0
+        if self._depth != 0:
+            self._hist = list()
+        else:
+            self._hist = None
 
     def __hash__(self):
         return hash(self._name)
 
     def __eq__(self, other) -> bool:
         return self._name == other._name
+
+    def __repr__(self) -> Any:
+        return str(self.value)
+
+    def __getitem__(self, key) -> Any:
+        # if hasattr(self, '__dict__'):
+        if self._hist is not None:
+            try:
+                return self._hist[key]
+            except IndexError:
+                raise
+        else:
+            return self.value[key]
 
     @property
     def name(self) -> str:
@@ -65,10 +84,22 @@ class Variable(ABC):
 
     @property
     def last_value(self) -> Any:
-        return self._last_value
+        if len(self._hist) > 0:
+            return self._hist[-1]
+        return None
+
+    @property
+    def oldest_value(self) -> Any:
+        if len(self._hist) > 0:
+            return self._hist[0]
+        return None
 
     def new_value(self) -> Any:
-        self._last_value = self._value
+        if self._value is not None:
+            if self._hist is not None:
+                self._hist.append(self._value)
+                while len(self._hist) > self._depth:
+                    self._hist.pop(0)
         self._value = self._fetch_value()
         return self._value
 
@@ -86,7 +117,7 @@ class SyscmdVariable(Variable):
         super().__init__(name, "syscmd", params)
 
         self._cmd = params["syscmd"]
-        self._last_value = self._value = self._fetch_value()
+        self._value = self._fetch_value()
 
     def _fetch_value(self) -> Any:
         return os.popen(self._cmd).read().strip()
@@ -102,7 +133,7 @@ class SysctlVariable(Variable):
 
         self._sysctl_name = params["sysctl"]
         self._sysctl = sysctl.Sysctl(self._sysctl_name)
-        self._last_value = self._value = self._sysctl.value
+        self._value = self._sysctl.value
 
     def _fetch_value(self) -> Any:
         return self._sysctl.value

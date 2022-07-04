@@ -118,9 +118,12 @@ class Monitor:
 
     def fetch_and_evaluate(self) -> None:
         locals = copy.deepcopy(self._locals)
-        self.fetch_variables(locals)
-        self.evaludate_derivatives(locals)
-        self.evaluate_incidents(locals)
+        try:
+            self.fetch_variables(locals)
+            self.evaludate_derivatives(locals)
+            self.evaluate_incidents(locals)
+        except IndexError:
+            pass
 
     def fetch_constants(self) -> None:
         for v in self._constants:
@@ -129,20 +132,13 @@ class Monitor:
 
     def fetch_variables(self, locals: Dict) -> None:
         for v in self._variables:
-            value = v.new_value()
-            last_value = v.last_value
-            locals[v.name] = value
-            logger.info(f"'{v.name}' is loaded and holds {value}")
-            locals["last_" + v.name] = last_value
-            logger.info(f"'last_{v.name}' is updated and holds '{last_value}'")
+            v.new_value()
+            locals[v.name] = v
+            logger.info(f"'{v.name}' is loaded and holds {v}")
         logger.debug("Reloaded all variables")
 
     def evaludate_derivatives(self, locals: Dict) -> None:
         for v, expr in self._derivatives.items():
-            last_value = locals.get(v, None)
-            if last_value is not None:
-                locals["last_" + v] = last_value
-                logger.info(f"'last_{v}' is updated and holds '{last_value}'")
             expr = eval(f'f"{expr}"', Monitor._functions, locals)
             logger.debug(f"Resolved derivative={v} to expression='{expr}'")
             value = eval(expr, Monitor._functions, locals)

@@ -1,0 +1,15 @@
+{
+    "variables": {
+        "pid": {"type": "sysctl", "sysctl": "kern.lastpid", "depth": 2}
+    },
+    "incidents": {
+        "pid_monitor": {
+            "description": "Check if PID wrapped",
+            "info": {
+                "trigger": "{pid[0]} > {pid[1]}",
+                "untrigger": "{pid[0]} < {pid[1]}",
+                "escalation": "logger 'Last pid wrapped and new one is {pid[1]}'"
+            }
+        }
+    }
+}

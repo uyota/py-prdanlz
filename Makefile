@@ -42,9 +42,12 @@ clean :
 .PHONY : run debug test build coverage coverage-html upload pip-install clean
 
 
+# Examples
 cpu_load :
 	$(PRDANLZ) --config examples/cpu_load.json
 swap_usage :
 	$(PRDANLZ) --config examples/swap_usage.json
 battery :
 	$(PRDANLZ) --config examples/battery.json
+pid :
+	$(PRDANLZ) -d --config examples/last_pid.json

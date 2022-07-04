@@ -21,6 +21,7 @@ Each level defines a range of a value.
 1. [Swap usage monitor](./examples/swap_usage.md)
 1. [CPU load monitor](./examples/cpu_load.md)
 1. [Battery monitor](./examples/battery.md)
+1. [Last pid monitor](./examples/last_pid.md)
 
 ## Aiming
 
@@ -47,6 +48,11 @@ Each level defines a range of a value.
         1. ["Syscmd" type](./README.md#syscmd-type)
         1. ["Sysctl" type](./README.md#sysctl-type)
         1. [Order of Evaluations among Variables](./README.md#order-of-evaluations-among-variables)
+        1. [Historical Values](./README.md#historical-values)
+            1. [How to Specify How Many to Keep](./README.md#how-to-specify-how-many-to-keep)
+            1. [How to Access](./README.md#how-to-access)
+                 1. [When a Value isn't yet Available](./README.md#when-a-value-isnt-yet-available)
+
     1. ["Incidents" and their "Levels"](./README.md#incidents-and-their-levels")
         1. ["Incident" Definition](./README.md#incident-definition)
         1. ["Level" Definition](./README.md#level-definition)
@@ -213,6 +219,33 @@ Priorities are not defined among same type of variables.
 Therefore, they cannot depend on each other.
 However, different tiers of variables are always evaluated in the same
 order as above and thus safe to assume values are latest.
+
+### Historical Values
+
+"Variables" and "derivatives" can hold multiple data.
+
+#### How to Specify How Many to Keep
+
+Specify "depth" and its level as argument.
+For example, '"depth": 10' keeps latest 10 values.
+
+#### How to Access
+
+A "Variable" or "derivative" will hold multiple values.
+Use Python array notation to access specify index.
+For example, "value[0]" will be the oldest value,
+"value[-1]" will be the latest value,
+"value[2]" will be the 3rd oldest value, and so on.
+
+##### When a Value isn't yet Available
+
+One may want to start evaluating after some values are accumulated with history.
+Accessing to not-yet-populated value raises an exception but caught silently in
+prdanlz.
+In other words, all rules are ignored until enough data points are generated.
+For example, if an evaluation is like "value[10] > 90", all evaluation up to
+and including 9th time are ignored.
+
 
 ## "Incidents" and their "Levels"
 

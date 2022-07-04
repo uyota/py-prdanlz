@@ -27,6 +27,83 @@ import copy
 from prdanlz import Variable, SyscmdVariable, SysctlVariable, instantiate_variable
 
 
+class CheckVariable(Variable):
+    def __init__(self, name: str, depth: int = 0):
+        super().__init__(
+            name, "test", {"type": "test", "test": "dummy", "depth": depth}
+        )
+        self._count = 0
+
+    def _fetch_value(self):
+        self._count += 1
+        return self._count
+
+
+def test_current_values():
+    # GIVEN
+    v = CheckVariable("test")
+
+    # WHEN
+    assert v.new_value() == 1
+
+    # THEN
+    assert v.value == 1
+    assert v.value == 1  # check accessing value doesn't change
+
+    # WHEN
+    assert v.new_value() == 2
+
+    # THEN
+    assert v.value == 2
+
+
+def test_history_nagative_depth():
+    # GIVEN & WHEN & THEN
+    v = CheckVariable("test", -1)
+
+
+def test_history_empty():
+    # GIVEN
+    v = CheckVariable("test", 3)
+
+    # WHEN & THEN
+    assert v.value is None
+    assert v.last_value is None
+    assert v.oldest_value is None
+
+
+def test_history_values():
+    # GIVEN
+    v = CheckVariable("test", 3)
+
+    # WHEN
+    assert v.new_value() == 1
+    assert v.new_value() == 2
+
+    # THEN
+    assert v[0] == 1
+    assert v[-1] == 1
+    assert v.last_value == 1
+    assert v.oldest_value == 1
+
+    # WHEN
+    assert v.new_value() == 3
+
+    # THEN
+    assert v[-1] == 2
+    assert v.last_value == 2
+    assert v.oldest_value == 1
+
+    # WHEN
+    assert v.new_value() == 4
+    assert v.new_value() == 5
+
+    # THEN
+    assert v[-1] == 4
+    assert v.last_value == 4
+    assert v.oldest_value == 2
+
+
 def test_syscmd__without_type():
     # GIVEN
     ls = {"syscmd": "ls -d /tmp"}
